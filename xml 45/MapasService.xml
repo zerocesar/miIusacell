@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<!-- Nombre del archivo original xmlMapas.xml -->
+<properties>
+<entry key="driver">oracle.jdbc.driver.OracleDriver</entry>
+<entry key="user">USRMAPASIUSA</entry>
+<entry key="password">s1gm4Pa5gE0</entry>
+<entry key="url">jdbc:oracle:thin:@(DESCRIPTION=(FAILOVER=on)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=10.188.17.164)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=10.188.17.163)(PORT=1521)))(CONNECT_DATA=(FAILOVER_MODE=(TYPE=session)(METHOD=basic)(RETRIES=180))(SERVER=dedicated)(SERVICE_NAME=APPBBK2)))</entry>
+<entry key="maxActive">20</entry>         <!-- número máximo de conexiones que se pueden abrir simultáneamente  -->
+<entry key="initialSize">10</entry>       <!-- número de conexiones que se quiere que se abran en cuanto el pool comienza a trabajar -->
+<entry key="minIdle">5</entry>            <!-- número mínimo de conexiones inactivas que queremos que haya -->
+<entry key="maxIdle">5</entry>            <!-- número máximo de conexiones inactivas que queremos que haya -->
+<entry key="maxWait">60000</entry>        <!-- número máximo de millisegundos de espera para obtener una conexion del pool -->
+<entry key="validationQuery">select 1 from dual</entry>
+
+<!-- Datos de conexion SQLServer -->
+
+<entry key="ip">10.188.21.97</entry>
+<entry key="driverSQLServer">com.microsoft.sqlserver.jdbc.SQLServerDriver</entry>
+<entry key="userSQLServer">indicadores</entry>
+<entry key="passwordSQLServer">Ind1c4d0r3s1us@</entry>
+<entry key="portSQLServer">1433</entry>
+<entry key="dbNameSQLServer">Sistemas</entry>
+
+<!-- Datos de conexion CLIECONP -->
+
+<entry key="clieconpDriver">oracle.jdbc.driver.OracleDriver</entry>
+<entry key="clieconpUser">USRIUSAGEO</entry>
+<entry key="clieconpPassword">staNe7terAdr</entry>
+<entry key="clieconpUrl">jdbc:oracle:thin:@(DESCRIPTION=(FAILOVER=on)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=10.188.22.23)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=10.188.22.24)(PORT=1521)))(CONNECT_DATA=(FAILOVER_MODE=(TYPE=session)(METHOD=basic)(RETRIES=180))(SERVER=dedicated)(SERVICE_NAME=CLCBDPRD)))</entry>
+<entry key="clieconpMaxActive">20</entry>         <!-- número máximo de conexiones que se pueden abrir simultáneamente  -->
+<entry key="clieconpInitialSize">10</entry>       <!-- número de conexiones que se quiere que se abran en cuanto el pool comienza a trabajar -->
+<entry key="clieconpMinIdle">5</entry>            <!-- número mínimo de conexiones inactivas que queremos que haya -->
+<entry key="clieconpMaxIdle">5</entry>            <!-- número máximo de conexiones inactivas que queremos que haya -->
+<entry key="clieconpMaxWait">60000</entry>        <!-- número máximo de millisegundos de espera para obtener una conexion del pool -->
+<entry key="clieconpValidationQuery">select 1 from dual</entry>
+
+<!-- Datos de conexion BSCS -->
+
+<entry key="bscsDriver">oracle.jdbc.driver.OracleDriver</entry>
+<entry key="bscsUser">USRIUSAGEO</entry>
+<entry key="bscsPassword">rusWeHeF2aca$</entry>
+<entry key="bscsUrl">jdbc:oracle:thin:@(DESCRIPTION=(FAILOVER=on)(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=172.19.1.200)(PORT=1521)))(CONNECT_DATA=(FAILOVER_MODE=(TYPE=session)(METHOD=basic)(RETRIES=180))(SERVER=dedicated)(SERVICE_NAME=PROD)))</entry>
+<entry key="bscsMaxActive">20</entry>         <!-- número máximo de conexiones que se pueden abrir simultáneamente  -->
+<entry key="bscsInitialSize">10</entry>       <!-- número de conexiones que se quiere que se abran en cuanto el pool comienza a trabajar -->
+<entry key="bscsMinIdle">5</entry>            <!-- número mínimo de conexiones inactivas que queremos que haya -->
+<entry key="bscsMaxIdle">5</entry>            <!-- número máximo de conexiones inactivas que queremos que haya -->
+<entry key="bscsMaxWait">60000</entry>        <!-- número máximo de millisegundos de espera para obtener una conexion del pool -->
+<entry key="bscsValidationQuery">select 1 from dual</entry>
+
+</properties>

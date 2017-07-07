@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="driver">oracle.jdbc.driver.OracleDriver</entry>
+<entry key="user">USRVENTUNICA</entry> 
+<entry key="password">USRVENTUNICA</entry> 
+<entry key="url">jdbc:oracle:thin:@10.203.24.215:1521:XE</entry>
+<entry key="maxActive">10</entry>         <!-- número máximo de conexiones que se pueden abrir simultáneamente  -->
+<entry key="initialSize">5</entry>        <!-- número de conexiones que se quiere que se abran en cuanto el pool comienza a trabajar -->
+<entry key="minIdle">5</entry>            <!-- número mínimo de conexiones inactivas que queremos que haya -->
+<entry key="maxIdle">5</entry>            <!-- número máximo de conexiones inactivas que queremos que haya -->
+<entry key="maxWait">60000</entry>        <!-- número máximo de millisegundos de espera para obtener una conexion del pool -->
+<entry key="validationQuery">select 1 from dual</entry>
+<entry key="tokenProperties">true</entry>
+</properties>
