@@ -5,7 +5,10 @@ import java.util.List;
 
 import javax.xml.rpc.ServiceException;
 
+import org.apache.commons.lang3.StringUtils;
+
 import mx.com.iusacell.services.miiusacell.masivo.model.OracleProcedures;
+import mx.com.iusacell.services.miiusacell.vo.DomicilioVO;
 import mx.com.iusacell.services.miiusacell.vo.TarjetaVO;
 import mx.com.iusacell.services.miiusacell.vo.TarjetasFrecuentesVO;
 import mx.com.iusacell.services.miusacell.call.CallServiceCardBlackList;
@@ -91,6 +94,103 @@ public class AltaTarjetaFrecuente {
 		return respuesta;
 	}
 	
+	public static int registraDomicilio(final DomicilioVO domicilioVO, final int usuarioId) throws ServiceException
+	{
+		validaDatosDomicilio(domicilioVO);
+		OracleProcedures oracle = new OracleProcedures();
+		return oracle.registraDomicilio(domicilioVO,usuarioId);
+	}
+	
+	public static int eliminaDomicilio(final DomicilioVO domicilioVO, final int usuarioId) throws ServiceException
+	{
+	    if(domicilioVO == null || domicilioVO.getDomicilioID() < 1 ){
+	        throw new ServiceException("El ID de domicilio no puede ser nulo o vacío");
+	    }
+		OracleProcedures oracle = new OracleProcedures();
+		return oracle.eliminaDomicilio(domicilioVO,usuarioId);
+	}
+	
+	public static int vincularDomicilioTarjeta(final String tarjeta, final String dn, final int domicilioID) throws ServiceException
+	{
+		OracleProcedures oracle = new OracleProcedures();
+		return oracle.vincularDomicilioTarjeta(tarjeta,dn, domicilioID);
+	}
+	
+	public static List<DomicilioVO> consultaDomicilios(final String dn)throws ServiceException{
+		OracleProcedures oracle = new OracleProcedures();
+		return oracle.consultaDomicilios(dn);
+	}
+	
+	public static String regitraTarjetaDomicilio(final TarjetaVO datosTarjeta, final int domicilioID, final int usuarioId) throws ServiceException
+	{
+		String respuesta = "";
+		
+		CallServiceCardBlackList validaTDC = new CallServiceCardBlackList();
+		boolean tdcBlacklList= false;
+		String validarCardBlacklist="";
+		OracleProcedures oracle = new OracleProcedures();
+		
+		CallServiceSemaphore semaforoTDC =new CallServiceSemaphore();
+		String altaTarjetaSemaphoreService="";
+		try
+		{	
+			try
+			{	
+				validarCardBlacklist = oracle.getValorParametro(164);
+				if (validarCardBlacklist.equals("1")){
+					tdcBlacklList=validaTDC.consultaCardBlackList(datosTarjeta.getNumeroTarjeta());
+					if (tdcBlacklList){
+						try{	
+							String user = (datosTarjeta.getDn() != null) ? datosTarjeta.getDn().substring(2) : usuarioId+"";
+							oracle.setCardBlackList(datosTarjeta.getNumeroTarjeta(), "Alta tarjeta",String.valueOf(tdcBlacklList),user);							
+						}catch(ServiceException e){
+							Logger.write("[WARN]   ::  ServiceException [setCardBlackList]" + e.getLocalizedMessage());
+						}
+						throw new ServiceException("La TDC se encuentra en BlackList");
+					}
+				}
+			}catch(Exception e){
+				if (tdcBlacklList){
+					throw new ServiceException("ServiceException [cardBlackList] :"+ e.getLocalizedMessage());
+				}
+			}
+			
+			validaDatosTarjeta(datosTarjeta);	
+			
+			try
+			{
+				altaTarjetaSemaphoreService=oracle.getValorParametro(177);
+				if (altaTarjetaSemaphoreService.equals("1"))
+				{
+					String cardHolder=datosTarjeta.getNombre()+ " "+datosTarjeta.getaPaterno()+" " +datosTarjeta.getaMaterno();
+					String expirationDate=datosTarjeta.getMesVencimiento()+"/"+datosTarjeta.getAnioVencimiento();
+					semaforoTDC.SemaphoreSaveCustomerInfo(datosTarjeta.getDn(), datosTarjeta.getNombre(), datosTarjeta.getaPaterno(),datosTarjeta.getaMaterno(), datosTarjeta.getNumeroTarjeta(),cardHolder,expirationDate,datosTarjeta.getCp());
+				}
+			}catch(Exception e){
+				throw new ServiceException("ServiceException : "+ e.getLocalizedMessage());
+			}
+			
+			List<TarjetasFrecuentesVO> tarjetasFrecuentes = oracle.obtieneTarjetasFrecuente(datosTarjeta.getDn());
+			if(tarjetasFrecuentes != null)
+			{
+				if(tarjetasFrecuentes.size() >= 3)
+					throw new ServiceException("Has registrado el máximo de tarjetas permitidas");
+			}						
+			
+			int continuar = oracle.altaTarjetaDomicilio( 
+					datosTarjeta,
+					domicilioID,
+					usuarioId
+					);
+			if(continuar == 0)
+				respuesta = "tarjeta guardada correctamente";
+		}
+		catch (Exception e) {
+			throw new ServiceException(e.getMessage());
+		}
+		return respuesta;
+	}
+	
 	private static void validaDatosTarjeta(final TarjetaVO datosTarjeta) throws ServiceException
 	{		
 		try{
@@ -165,5 +265,40 @@ public class AltaTarjetaFrecuente {
 		{
 			throw new ServiceException("Parametros de entrada incorrectos :: " + e .getMessage());
 		}
+	}
+	
+	private static void validaDatosDomicilio(final DomicilioVO domicilioVO) throws ServiceException
+	{
+		if(domicilioVO == null){
+			throw new ServiceException("Parámetros de entrada incorrectos, no se recibieron datos de domicilio");
+		}
+		
+		if(StringUtils.isEmpty(domicilioVO.getCalle())){       	  
+			throw new ServiceException("Parámetros de entrada incorrectos, calle no puede ir vacío");
+		}	
+		
+		if(StringUtils.isEmpty(domicilioVO.getNumeroExterior())){       	  
+			throw new ServiceException("Parámetros de entrada incorrectos, número exterior no puede ir vacío");
+		}	
+		
+		if(StringUtils.isEmpty(domicilioVO.getColonia())){       	  
+			throw new ServiceException("Parámetros de entrada incorrectos, colonia no puede ir vacío");
+		}	
+		
+		if(StringUtils.isEmpty(domicilioVO.getEstado())){       	  
+			throw new ServiceException("Parametros de entrada incorrectos, estado no puede ir vacío");
+		}	
+		
+		if(StringUtils.isEmpty(domicilioVO.getCalle())){       	  
+			throw new ServiceException("Parametros de entrada incorrectos, calle no puede ir vacío");
+		}	
+		
+		if(StringUtils.isEmpty(domicilioVO.getCiudad())){       	  
+			throw new ServiceException("Parámetros de entrada incorrectos, ciudad no puede ir vacío");
+		}	
+		
+		if(StringUtils.isEmpty(domicilioVO.getPais())){       	  
+			throw new ServiceException("Parámetros de entrada incorrectos, país no puede ir vacío");
+		}						
 	}
 }

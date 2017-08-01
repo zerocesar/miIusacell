@@ -10,7 +10,10 @@ public class TarjetasFrecuentesVO {
 	private String apMaterno;
 	private String cp;
 	private String ultimosDigitos;
-	private int marcaTarjetaId;
+	private int marcaTarjetaId;	
+	private DomicilioVO domicilio;
+	
+	
 	public String getNumeroTarjeta() {
 		return numeroTarjeta;
 	}
@@ -65,4 +68,10 @@ public class TarjetasFrecuentesVO {
 	public int getMarcaTarjetaId() {
 		return marcaTarjetaId;
 	}
+	public DomicilioVO getDomicilio() {
+		return domicilio;
+	}
+	public void setDomicilio(final DomicilioVO domicilio) {
+		this.domicilio = domicilio;
+	}		
 }

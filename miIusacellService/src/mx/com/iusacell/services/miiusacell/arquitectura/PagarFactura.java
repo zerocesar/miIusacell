@@ -11,6 +11,7 @@ import mx.com.iusacell.services.miiusacell.vo.ConsultaCuentaResponseVO;
 import mx.com.iusacell.services.miiusacell.vo.PagoFacturaResponseVO;
 import mx.com.iusacell.services.miiusacell.vo.PagoVO;
 import mx.com.iusacell.services.miiusacell.vo.ValidarErrorTarjetaVO;
+import mx.com.iusacell.services.miiusacell.vo.autorizador.AddressVO;
 import mx.com.iusacell.services.miusacell.call.CallServiceCardBlackList;
 import mx.com.iusacell.services.miusacell.call.CallServicePayments;
 import mx.com.iusacell.services.miusacell.util.ParseXMLFile;
@@ -119,7 +120,7 @@ public class PagarFactura implements PagarFacturain {
 	public PagoFacturaResponseVO flujoFingerPrint(final String numTx, final String user, final String pass, final String dn, final CardVO tarjeta, 
 			final int tipoPlataforma, final int compania, final int sistemaOrigen, final int dispositivo, 
 			final String password, final String ip, final String email, final String fingerPrint,
-			final boolean isFlowATT, final String token) 
+			final boolean isFlowATT, final AddressVO address, final String token) 
 	throws ServiceException
 	{
 		String sResponse = "";

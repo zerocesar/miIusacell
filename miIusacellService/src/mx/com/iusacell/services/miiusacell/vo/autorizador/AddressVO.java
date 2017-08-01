@@ -4,11 +4,16 @@ public class AddressVO {
 	
 	private String apellidos;
 	private String nombres;
-	private String municipio;
-	private String estado;
+	private String municipio;	
+	private String codigoPostal;
+	
 	private String colonia;
+	private String estado;
 	private String calle;
-	private String codigoPostal;	
+	private String numeroExterior;
+	private String numeroInterior;	
+	private String ciudad; //municipio
+	private String pais;
 	
 	public String getApellidos() {
 		return apellidos;
@@ -51,5 +56,29 @@ public class AddressVO {
 	}
 	public void setCodigoPostal(final String codigoPostal) {
 		this.codigoPostal = codigoPostal;
+	}
+	public String getNumeroExterior() {
+		return numeroExterior;
+	}
+	public void setNumeroExterior(final String numeroExterior) {
+		this.numeroExterior = numeroExterior;
+	}
+	public String getNumeroInterior() {
+		return numeroInterior;
+	}
+	public void setNumeroInterior(final String numeroInterior) {
+		this.numeroInterior = numeroInterior;
+	}
+	public String getCiudad() {
+		return ciudad;
+	}
+	public void setCiudad(final String ciudad) {
+		this.ciudad = ciudad;
+	}
+	public String getPais() {
+		return pais;
+	}
+	public void setPais(final String pais) {
+		this.pais = pais;
 	}	
 }

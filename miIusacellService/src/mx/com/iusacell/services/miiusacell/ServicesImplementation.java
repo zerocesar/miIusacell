@@ -131,6 +131,7 @@ import mx.com.iusacell.services.miiusacell.vo.DetalleSaldoVO;
 import mx.com.iusacell.services.miiusacell.vo.DetalleTotalesLlamadas;
 import mx.com.iusacell.services.miiusacell.vo.DetalleTotalesVO;
 import mx.com.iusacell.services.miiusacell.vo.DetalleWalletsVO;
+import mx.com.iusacell.services.miiusacell.vo.DomicilioVO;
 import mx.com.iusacell.services.miiusacell.vo.ErrorVO;
 import mx.com.iusacell.services.miiusacell.vo.EstadoCuentaVO;
 import mx.com.iusacell.services.miiusacell.vo.FacturaVirtualDetalleVO;
@@ -173,6 +174,7 @@ import mx.com.iusacell.services.miiusacell.vo.UfmiVO;
 import mx.com.iusacell.services.miiusacell.vo.WalletsDetalleVO;
 import mx.com.iusacell.services.miiusacell.vo.catalogoCambioPlanVO;
 import mx.com.iusacell.services.miiusacell.vo.GestionServiciosWS.RespuestaServicios;
+import mx.com.iusacell.services.miiusacell.vo.autorizador.AddressVO;
 import mx.com.iusacell.services.miiusacell.vo.autorizador.TransactionVO;
 import mx.com.iusacell.services.miiusacell.vo.messageMail.MessageMailBean;
 import mx.com.iusacell.services.miiusacell.vo.messageMail.RespuestaMensajeBean;
@@ -3041,7 +3043,7 @@ public class ServicesImplementation implements ServicesInterface {
 		return respuesta;
 	}
 	
-	public String registroTarjetas(String user, String pass, TarjetaVO tarjeta, int usuarioId, String token) throws Throwable{	    
+	public String registroTarjetas(String user, String pass, TarjetaVO tarjeta, int domicilioID, int usuarioId, String token) throws Throwable{	    
 		
 		long initime = System.currentTimeMillis();
         Logger.init("registroTarjetas");
@@ -3073,13 +3075,14 @@ public class ServicesImplementation implements ServicesInterface {
 			Logger.write("     cp                     : " + tarjeta.getCp());
 			Logger.write("     ultimosDigitos         : " + tarjeta.getUltimosDigitos());
 			Logger.write("     dn                     : " + tarjeta.getDn());
+			Logger.write("     domicilioID            : " + domicilioID);			
 			Logger.write("     usuarioId              : " + usuarioId);
 			Logger.write("     token                  : " + Formatter.pintaLogCadenasLargas(token));
 			Logger.write("     remoteAddress          : " + getClientIpXfire());
 			
 			tokens.validaToken(tarjeta.getDn(), token, new MensajeLogBean());
 		
-			respuesta = AltaTarjetaFrecuente.regitraTarjeta(tarjeta, usuarioId);
+			respuesta = AltaTarjetaFrecuente.regitraTarjetaDomicilio(tarjeta, domicilioID, usuarioId);
 			
 			Logger.write("   + Respuesta              + ");
 			Logger.write("     respuesta              : " + respuesta);
@@ -3292,7 +3295,7 @@ public class ServicesImplementation implements ServicesInterface {
 
 			tokens.validaToken(dn, token, new MensajeLogBean());
 
-			respuesta = ObtieneFrecuentes.obtieneTarjetasFrecuente(dn);					
+			respuesta = ObtieneFrecuentes.obtieneTarjetasFrecuenteDomicilio(dn);					
 			
 			Logger.write("   + Respuesta              + ");
 			Logger.write("     respuesta              : " + respuesta);
@@ -9907,7 +9910,7 @@ public class ServicesImplementation implements ServicesInterface {
 					Logger.write("Bitacora: No se impacto la bitacora - " + e.getLocalizedMessage());
 				}
 				AbonoTiempoAireIn abonoTA = new AbonoTiempoAire();
-				tiempoAireVO = abonoTA.flujoFingerPrint(token, dn, dnParaAbono, anioExpira, cdgSeguridad, concepto, importe, mesExpira, numTarjeta, tipoTarjeta, ip, secuencia, password, tipoPlataforma, respuesta, "", fingerPrint, false);
+				tiempoAireVO = abonoTA.flujoFingerPrint(token, dn, dnParaAbono, anioExpira, cdgSeguridad, concepto, importe, mesExpira, numTarjeta, tipoTarjeta, ip, secuencia, password, tipoPlataforma, respuesta, "", fingerPrint, null, false);
 				
 				try{
 					if(tiempoAireVO != null)
@@ -10017,7 +10020,7 @@ public class ServicesImplementation implements ServicesInterface {
 					Logger.write("Bitacora: No se impacto la bitacora - " + e.getLocalizedMessage());
 				}
 				PagarFacturain pagarFactura = new PagarFactura();
-				response = pagarFactura.flujoFingerPrint(numTx, user, pass, dn, tarjeta, tipoPlataforma, compania, sistemaOrigen, dispositivo, password, "", "", fingerPrint, false, token);
+				response = pagarFactura.flujoFingerPrint(numTx, user, pass, dn, tarjeta, tipoPlataforma, compania, sistemaOrigen, dispositivo, password, "", "", fingerPrint, false, null, token);
 				
 				if(response != null){
 					Logger.write("   + Respuesta              + ");
@@ -10056,7 +10059,7 @@ public class ServicesImplementation implements ServicesInterface {
 			return response;
 	 	}
 		
-		public AbonoTiempoAireVO abonoTiempoAireBitFingerP(String user,String pass, String dn, String dnParaAbono, int anioExpira, String cdgSeguridad, String concepto, Double importe, int mesExpira, String numTarjeta, String tipoTarjeta, String ip, Long secuencia, String password, int tipoPlataforma, int compania, int sistemaOrigen, int dispositivo, String email, String fingerPrint, String token) throws Throwable{
+		public AbonoTiempoAireVO abonoTiempoAireBitFingerP(String user,String pass, String dn, String dnParaAbono, int anioExpira, String cdgSeguridad, String concepto, Double importe, int mesExpira, String numTarjeta, String tipoTarjeta, String ip, Long secuencia, String password, int tipoPlataforma, int compania, int sistemaOrigen, int dispositivo, String email, String fingerPrint, AddressVO address, String token) throws Throwable{
 			
 			long initime = System.currentTimeMillis();
 	        Logger.init("abonoTiempoAireBitFingerP");
@@ -10102,6 +10105,13 @@ public class ServicesImplementation implements ServicesInterface {
 				Logger.write("     Dispositivo            : "+ dispositivo);
 				Logger.write("     email                  : "+ email);
 				Logger.write("     fingerPrint            : "+ fingerPrint);
+				Logger.write("     calle                  : " + address.getCalle());
+				Logger.write("     numeroExterior         : " + address.getNumeroExterior());				
+				Logger.write("     numeroExterior         : " + address.getNumeroInterior());				
+				Logger.write("     colonia                : " + address.getColonia());
+				Logger.write("     estado                 : " + address.getEstado());
+				Logger.write("     ciudad                 : " + address.getCiudad());
+				Logger.write("     pais                   : " + address.getPais());
 				Logger.write("     token                  : " + Formatter.pintaLogCadenasLargas(token));				
 				Logger.write("     remoteAddress          : " + getClientIpXfire());
 
@@ -10146,7 +10156,7 @@ public class ServicesImplementation implements ServicesInterface {
 				}else{
 					abonoTA = new AbonoTiempoAire();
 				}
-				tiempoAireVO = abonoTA.flujoFingerPrint(token, dn, dnParaAbono, anioExpira, cdgSeguridad, concepto, importe, mesExpira, numTarjeta, tipoTarjeta, ip, secuencia, password, tipoPlataforma, respuesta, email, fingerPrint, true);
+				tiempoAireVO = abonoTA.flujoFingerPrint(token, dn, dnParaAbono, anioExpira, cdgSeguridad, concepto, importe, mesExpira, numTarjeta, tipoTarjeta, ip, secuencia, password, tipoPlataforma, respuesta, email, fingerPrint, address, true);
 				
 				try{
 					if(tiempoAireVO != null)
@@ -10180,7 +10190,7 @@ public class ServicesImplementation implements ServicesInterface {
 			return tiempoAireVO;
 		}
 		
-		public PagoFacturaResponseVO pagarFacturaFingerP(String user, String pass, String dn, CardVO tarjeta, int tipoPlataforma, int compania, int sistemaOrigen, int dispositivo, String password, String ip, String email, String fingerPrint, String token) throws Throwable{
+		public PagoFacturaResponseVO pagarFacturaFingerP(String user, String pass, String dn, CardVO tarjeta, int tipoPlataforma, int compania, int sistemaOrigen, int dispositivo, String password, String ip, String email, String fingerPrint, AddressVO address, String token) throws Throwable{
 	 		long initime = System.currentTimeMillis();
 	        Logger.init("pagarFacturaFingerP");
 
@@ -10218,6 +10228,15 @@ public class ServicesImplementation implements ServicesInterface {
 					Logger.write("     getCardNumber          : " + tarjeta.getCardNumber());
 					Logger.write("     getCardSecurityCode    : " + tarjeta.getCardSecurityCode());
 				}
+				
+				Logger.write("     calle                  : " + address.getCalle());
+				Logger.write("     numeroExterior         : " + address.getNumeroExterior());				
+				Logger.write("     numeroExterior         : " + address.getNumeroInterior());				
+				Logger.write("     colonia                : " + address.getColonia());
+				Logger.write("     estado                 : " + address.getEstado());
+				Logger.write("     ciudad                 : " + address.getCiudad());
+				Logger.write("     pais                   : " + address.getPais());
+				
 				Logger.write("     token                  : " + Formatter.pintaLogCadenasLargas(token));
 				Logger.write("     remoteAddress          : " + getClientIpXfire());
 				
@@ -10264,7 +10283,7 @@ public class ServicesImplementation implements ServicesInterface {
 				}else{
 					pagarFactura = new PagarFactura();
 				}				
-				response = pagarFactura.flujoFingerPrint(numTx, user, pass, dn, tarjeta, tipoPlataforma, compania, sistemaOrigen, dispositivo, password, ip, email, fingerPrint, true, token);
+				response = pagarFactura.flujoFingerPrint(numTx, user, pass, dn, tarjeta, tipoPlataforma, compania, sistemaOrigen, dispositivo, password, ip, email, fingerPrint, true, address, token);
 				
 				if(response != null){
 					Logger.write("   + Respuesta              + ");
@@ -10919,4 +10938,250 @@ public class ServicesImplementation implements ServicesInterface {
 
 			return cardInfo;
 		}
+		
+		
+    /* ****************************************************************************************
+     * 
+     * 
+     * 
+     * ************************************************************************************* */
+		
+    public int agregaDomicilio(String user, String pass, String dn, DomicilioVO domicilioVO, int usuarioId, String token) throws Throwable
+    {
+        long initime = System.currentTimeMillis();
+        Logger.init("agregaDomicilio (" + dn + ")");
+        
+        if(user.trim().equals("") || !user.trim().equals("AGhAxzwOwKEbI12XQ1MIjQ*/")){
+            Logger.write(" (!) El usuario no es válido ");
+            throw new ServiceException("[ALE] usuario no valido");
+        }
+        
+        if(pass.trim().equals("") || !pass.trim().equals("AGhAxzwOwKEbI12XQ1MIjQ*/")){
+            Logger.write(" (!) El password no es válido ");
+            throw new ServiceException("[ALE] password no válido");
+        }
+        
+        int domicilioID = -1;
+        ValidaTokens tokens =  new ValidaTokens();
+        
+        try
+        {
+            Logger.write("     user                   : -PROTEGIDO-"                              );
+            Logger.write("     pass                   : -PROTEGIDO-"                              );
+            Logger.write("     dn                     : " + dn                                    );
+            Logger.write("     calle                  : " + domicilioVO.getCalle()                );
+            Logger.write("     numeroExterior         : " + domicilioVO.getNumeroExterior()       );
+            Logger.write("     numeroInterior         : " + domicilioVO.getNumeroInterior()       );
+            Logger.write("     colonia                : " + domicilioVO.getColonia()              );
+            Logger.write("     estado                 : " + domicilioVO.getEstado()               );
+            Logger.write("     ciudad                 : " + domicilioVO.getCiudad()               );
+            Logger.write("     pais                   : " + domicilioVO.getPais()                 );
+            Logger.write("     usuarioId              : " + usuarioId                             );
+            Logger.write("     token                  : " + Formatter.pintaLogCadenasLargas(token));
+            Logger.write("     remoteAddress          : " + getClientIpXfire()                    );
+            
+            tokens.validaToken(dn, token, new MensajeLogBean());
+            
+            domicilioID = AltaTarjetaFrecuente.registraDomicilio(domicilioVO, usuarioId);
+            
+            Logger.write(" (<) Respuesta              : " + domicilioID);
+        }
+        catch(Exception exc)
+        {
+            if(exc != null && exc.getLocalizedMessage() != null){
+                if(exc.getLocalizedMessage().contains("ORA-20000")      || exc.getLocalizedMessage().contains("Parametros de entrada") ||
+                   exc.getLocalizedMessage().contains("Has registrado") || exc.getLocalizedMessage().contains("cardBlackList") ||
+                   exc.getLocalizedMessage().contains("SemaphoreSaveCustomerInfo"))
+                {
+                    throw new ServiceException("[WARN] agregaDomicilio [" + dn + "] :: " + exc.getLocalizedMessage());
+                }else{
+                    throw new ServiceException("[ERR] agregaDomicilio [" + dn + "] :: " + exc.getLocalizedMessage());
+                }
+            }else{
+                throw new ServiceException("[ERR] agregaDomicilio [" + dn + "] :: " + exc.getLocalizedMessage());
+            }
+        }
+        finally{
+            Logger.end("agregaDomicilio (" + dn + ") :: " + getLocalAddress(), initime);
+        }
+        
+        return domicilioID;
+    }
+    
+    public int eliminaDomicilio(String user, String pass, String dn, DomicilioVO domicilioVO, int usuarioId, String token) throws Throwable
+    {
+        long initime = System.currentTimeMillis();
+        Logger.init("eliminaDomicilio (" + dn + ")");
+        
+        if(user.trim().equals("") || !user.trim().equals("AGhAxzwOwKEbI12XQ1MIjQ*/")){
+            Logger.write(" (!) El usuario no es válido ");
+            throw new ServiceException("[ALE] usuario no valido");
+        }
+        
+        if(pass.trim().equals("") || !pass.trim().equals("AGhAxzwOwKEbI12XQ1MIjQ*/")){
+            Logger.write(" (!) El password no es válido ");
+            throw new ServiceException("[ALE] password no válido");
+        }
+        
+        ValidaTokens tokens =  new ValidaTokens();
+        
+        int respuestaBD = -1;
+        
+        try
+        {
+            Logger.write("     user                   : -PROTEGIDO-");
+            Logger.write("     pass                   : -PROTEGIDO-");
+            Logger.write("     dn                     : " + dn                                    );
+            Logger.write("     domicilioID            : " + domicilioVO.getDomicilioID());
+            Logger.write("     usuarioId              : " + usuarioId);
+            Logger.write("     token                  : " + Formatter.pintaLogCadenasLargas(token));
+            Logger.write("     remoteAddress          : " + getClientIpXfire());
+            
+            tokens.validaToken(dn, token, new MensajeLogBean());
+            
+            respuestaBD = AltaTarjetaFrecuente.eliminaDomicilio(domicilioVO, usuarioId);
+            
+            Logger.write(" (<) Respuesta              : " + respuestaBD);
+        }
+        catch(Exception e)
+        {
+            if(e != null && e.getLocalizedMessage() != null)
+            {
+                if(e.getLocalizedMessage().contains("ORA-20000")     || e.getLocalizedMessage().contains("Parametros de entrada") ||
+                   e.getLocalizedMessage().contains("Has eliminado") || e.getLocalizedMessage().contains("cardBlackList")         || 
+                   e.getLocalizedMessage().contains("SemaphoreSaveCustomerInfo"))
+                {
+                    throw new ServiceException("[WARN] eliminaDomicilio [" + dn +"] :: " + e.getLocalizedMessage());
+                }else{
+                    throw new ServiceException("[ERR] eliminaDomicilio [" + dn +"] :: " + e.getLocalizedMessage());
+                }
+            }else{
+                throw new ServiceException("[ERR] eliminaDomicilio [" + dn +"] :: " + e.getLocalizedMessage());
+            }
+        }
+        finally
+        {
+            Logger.end("eliminaDomicilio  (" + dn + ") :: " + getLocalAddress(), initime);
+        }
+        
+        return respuestaBD;
+    }
+    
+    public int vincularDomicilioTarjeta (String user, String pass, String numeroTarjeta, String dn, int domicilioID, int usuarioId, String token) throws Throwable
+    {
+        long initime = System.currentTimeMillis();
+
+        Logger.init("vincularDomicilioTarjeta (" + dn + ")");
+
+        if(user.trim().equals("") || !user.trim().equals("AGhAxzwOwKEbI12XQ1MIjQ*/")) {
+            Logger.write(" (!) El usuario no es válido ");
+            throw new ServiceException("[ALE] usuario no valido");
+        }
+
+        if(pass.trim().equals("") || !pass.trim().equals("AGhAxzwOwKEbI12XQ1MIjQ*/")) {
+            Logger.write(" (!) El password no es válido ");
+            throw new ServiceException("[ALE] password no válido");
+        }
+
+        ValidaTokens tokens =  new ValidaTokens();
+
+        int respuestaBD = -1;
+
+        try
+        {
+            Logger.write("     user                   : -PROTEGIDO-"    );
+            Logger.write("     pass                   : -PROTEGIDO-"    );
+            Logger.write("     dn                     : " + dn          );
+            Logger.write("     domicilioID            : " + domicilioID );
+            Logger.write("     usuarioId              : " + usuarioId   );
+            Logger.write("     token                  : " + Formatter.pintaLogCadenasLargas(token));
+            Logger.write("     remoteAddress          : " + getClientIpXfire());
+
+            tokens.validaToken(dn, token, new MensajeLogBean());
+            
+            respuestaBD = AltaTarjetaFrecuente.vincularDomicilioTarjeta(numeroTarjeta, dn, domicilioID);
+            
+            Logger.write("   + Respuesta              + ");
+            Logger.write("     respuesta              : " + respuestaBD);
+        }
+        catch(Exception e)
+        {
+            if(e != null && e.getLocalizedMessage() != null)
+            {
+                if(e.getLocalizedMessage().contains("ORA-20000")     || e.getLocalizedMessage().contains("Parametros de entrada") ||
+                   e.getLocalizedMessage().contains("Has eliminado") || e.getLocalizedMessage().contains("cardBlackList")         ||
+                   e.getLocalizedMessage().contains("SemaphoreSaveCustomerInfo"))
+                {
+                    throw new ServiceException("[WARN] vincularDomicilioTarjeta [" + dn +"] :: " + e.getLocalizedMessage());
+                }else{
+                    throw new ServiceException("[ERR] vincularDomicilioTarjeta [" + dn +"] :: " + e.getLocalizedMessage());
+                }
+            }else{
+                throw new ServiceException("[ERR] vincularDomicilioTarjeta [" + dn +"] :: " + e.getLocalizedMessage());
+            }
+        }
+        finally{
+            Logger.end("vincularDomicilioTarjeta  (" + dn + ") :: " + getLocalAddress(), initime);
+        }
+
+        return respuestaBD;
+    }
+    
+    public List<DomicilioVO> getDomicilios(String user, String pass, String dn, int usuarioId, String token) throws Throwable
+    {
+        long initime = System.currentTimeMillis();
+        Logger.init("getDomicilios  (" + dn + ")");
+        
+        if(user.trim().equals("") || !user.trim().equals("AGhAxzwOwKEbI12XQ1MIjQ*/")){
+            Logger.write(" (!) El usuario no es válido ");
+            throw new ServiceException("[ALE] usuario no valido");
+        }
+        
+        if(pass.trim().equals("") || !pass.trim().equals("AGhAxzwOwKEbI12XQ1MIjQ*/")){
+            Logger.write(" (!) El password no es válido ");
+            throw new ServiceException("[ALE] password no válido");
+        }
+        
+        ValidaTokens tokens =  new ValidaTokens();
+        
+        List<DomicilioVO> domicilios = null;
+        
+        try
+        {
+            Logger.write("     user                   : -PROTEGIDO-"    );
+            Logger.write("     pass                   : -PROTEGIDO-"    );
+            Logger.write("     dn                     : " + dn          );
+            Logger.write("     usuarioId              : " + usuarioId   );
+            Logger.write("     token                  : " + Formatter.pintaLogCadenasLargas(token));
+            Logger.write("     remoteAddress          : " + getClientIpXfire());
+            
+            tokens.validaToken(dn, token, new MensajeLogBean());
+            
+            domicilios = AltaTarjetaFrecuente.consultaDomicilios(dn);
+            
+            Logger.write("   + Respuesta              + ");
+            Logger.write("     respuesta              : " + domicilios.size());
+        }
+        catch(Exception e)
+        {
+            if(e != null && e.getLocalizedMessage() != null)
+            {
+                if(e.getLocalizedMessage().contains("ORA-20000")     || e.getLocalizedMessage().contains("Parametros de entrada") ||
+                   e.getLocalizedMessage().contains("Has eliminado") || e.getLocalizedMessage().contains("cardBlackList")         ||
+                   e.getLocalizedMessage().contains("SemaphoreSaveCustomerInfo"))
+                {
+                    throw new ServiceException("[WARN] getDomicilios [" + dn +"] :: " + e.getLocalizedMessage());
+                }else{
+                    throw new ServiceException("[ERR] getDomicilios [" + dn +"] :: " + e.getLocalizedMessage());
+                }
+            }else{
+                throw new ServiceException("[ERR] getDomicilios [" + dn +"] :: " + e.getLocalizedMessage());
+            }
+        }
+        finally{
+            Logger.end("getDomicilios  (" + dn + ") :: " + getLocalAddress(), initime);
+        }
+        
+        return domicilios;
+    }
 }

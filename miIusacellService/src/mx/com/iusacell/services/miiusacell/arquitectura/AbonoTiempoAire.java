@@ -13,12 +13,13 @@ import mx.com.iusacell.services.miiusacell.vo.AbonoTiempoAireVO;
 import mx.com.iusacell.services.miiusacell.vo.CajaRegistraMovimientoVO;
 import mx.com.iusacell.services.miiusacell.vo.TarjetasCajaVO;
 import mx.com.iusacell.services.miiusacell.vo.ValidarErrorTarjetaVO;
+import mx.com.iusacell.services.miiusacell.vo.autorizador.AddressVO;
 import mx.com.iusacell.services.miusacell.call.CallServiceAbonoTA;
 import mx.com.iusacell.services.miusacell.call.CallServiceAbonoTiempoAireLegacy;
 import mx.com.iusacell.services.miusacell.call.CallServiceCajaRegistraMovimiento;
+import mx.com.iusacell.services.miusacell.call.CallServiceCardBlackList;
 import mx.com.iusacell.services.miusacell.util.ParseXMLFile;
 import mx.com.iusacell.services.miusacell.util.ParseXMLServices;
-import mx.com.iusacell.services.miusacell.call.CallServiceCardBlackList;
 
 
 public class AbonoTiempoAire implements AbonoTiempoAireIn {
@@ -335,7 +336,7 @@ public class AbonoTiempoAire implements AbonoTiempoAireIn {
 	        final String cdgSeguridad,final String concepto,final  Double importe,final int mesExpira,final String numTarjeta, 
 	        String tipoTarjeta,final String ip,final Long secuencia,final String password, 
 	        final int tipoPlataforma,final String idIdentificar, final String email, final String fingerPrint, 
-	        final boolean isFlowATT) throws ServiceException
+	        final AddressVO address, final boolean isFlowATT) throws ServiceException
 	{
 //		CallServiceAbonoTiempoAireETAK abonoTiempoAireETAK = new CallServiceAbonoTiempoAireETAK();
 		CallServiceAbonoTiempoAireLegacy abonoTiempoaireLegacy = new CallServiceAbonoTiempoAireLegacy();

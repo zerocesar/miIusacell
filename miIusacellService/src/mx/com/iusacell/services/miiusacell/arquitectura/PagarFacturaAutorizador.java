@@ -12,6 +12,7 @@ import mx.com.iusacell.services.miiusacell.vo.ConsultaCuentaResponseVO;
 import mx.com.iusacell.services.miiusacell.vo.PagoFacturaResponseVO;
 import mx.com.iusacell.services.miiusacell.vo.PagoVO;
 import mx.com.iusacell.services.miiusacell.vo.ValidarErrorTarjetaVO;
+import mx.com.iusacell.services.miiusacell.vo.autorizador.AddressVO;
 import mx.com.iusacell.services.miiusacell.vo.autorizador.Transaction;
 import mx.com.iusacell.services.miusacell.call.CallServiceCardBlackList;
 import mx.com.iusacell.services.miusacell.call.CallServicePayments;
@@ -159,7 +160,7 @@ public class PagarFacturaAutorizador implements PagarFacturain {
 		return response;
 	}
 
-	public PagoFacturaResponseVO flujoFingerPrint(final String numTx, final String user, final String pass, final String dn, final CardVO tarjeta, final int tipoPlataforma, final int compania, final int sistemaOrigen, final int dispositivo, final String password, final String ip, final String email, final String fingerPrint, final boolean isFlowATT, final String token) throws ServiceException
+	public PagoFacturaResponseVO flujoFingerPrint(final String numTx, final String user, final String pass, final String dn, final CardVO tarjeta, final int tipoPlataforma, final int compania, final int sistemaOrigen, final int dispositivo, final String password, final String ip, final String email, final String fingerPrint, final boolean isFlowATT, AddressVO address, final String token) throws ServiceException
 	{
 		String sResponse = "";
 		CallServicePayments payment = new CallServicePayments();
@@ -234,7 +235,7 @@ public class PagarFacturaAutorizador implements PagarFacturain {
 			respAutorizador = autorizadorBusiness.applyKeyedCharge(tarjeta.getCardNumber(), tarjeta.getCardSecurityCode(), 
 					Integer.valueOf(tarjeta.getCardExpiryMonth()),Integer.valueOf(tarjeta.getCardExpiryYear()),
 					Double.valueOf(tarjeta.getAmount()), tipoPlataforma, businessId, sRegion, storeId, concepto, 
-					fingerPrint, mesesSinInt, dn, ip, email, tipoCargo, null, isFlowATT); 		
+					fingerPrint, mesesSinInt, dn, ip, email, tipoCargo, address, isFlowATT); 		
 		}
 		catch (Exception ex) {
 			int codigo = -1;

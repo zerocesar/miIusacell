@@ -46,6 +46,7 @@ import mx.com.iusacell.services.miiusacell.vo.CuentaCreditoVO;
 import mx.com.iusacell.services.miiusacell.vo.DatosClienteCancelacionVO;
 import mx.com.iusacell.services.miiusacell.vo.DatosLogin;
 import mx.com.iusacell.services.miiusacell.vo.DatosUsuarioCancelacionVO;
+import mx.com.iusacell.services.miiusacell.vo.DomicilioVO;
 import mx.com.iusacell.services.miiusacell.vo.GruoupIDCancelacionVO;
 import mx.com.iusacell.services.miiusacell.vo.ImagenEquipoVO;
 import mx.com.iusacell.services.miiusacell.vo.IndicadoresVO;
@@ -67,17 +68,20 @@ import mx.com.iusacell.services.miiusacell.vo.ServiciosBundlesAdicionales;
 import mx.com.iusacell.services.miiusacell.vo.ServiciosContratarVO;
 import mx.com.iusacell.services.miiusacell.vo.ServiciosDisponiblesVO;
 import mx.com.iusacell.services.miiusacell.vo.SuspensionReactivacionVO;
+import mx.com.iusacell.services.miiusacell.vo.TarjetaVO;
 import mx.com.iusacell.services.miiusacell.vo.TarjetasFrecuentesVO;
 import mx.com.iusacell.services.miiusacell.vo.TipoServicioVO;
 import mx.com.iusacell.services.miiusacell.vo.TreeSubgroupCancelacionVO;
 import mx.com.iusacell.services.miiusacell.vo.ValidarErrorTarjetaVO;
 import mx.com.iusacell.services.miiusacell.vo.catalogoCambioPlanVO;
+import mx.com.iusacell.services.miusacell.util.Constantes;
 import mx.com.iusacell.services.miusacell.util.Formatter;
 import mx.com.iusacell.services.miusacell.util.Utilerias;
 import oracle.jdbc.OracleTypes;
 import oracle.sql.ARRAY;
 import oracle.sql.ArrayDescriptor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.FileCopyUtils;
 
 public class OracleProcedures {
@@ -1115,7 +1119,7 @@ public class OracleProcedures {
         }       
         Logger.timeTx(commPRN,"     Tiempo ejecucion       : " + Util.tipoRespuesta(timeIni));
         return tarjetasList;
-    }
+    }       
 
     public int bajaNumeroFrecuente(final String dn, final String telefono, final int usuarioId) throws ServiceException
     {
@@ -13555,5 +13559,550 @@ public class OracleProcedures {
 			 }
 			 Logger.timeTx(commPRN,"     Tiempo ejecucion   - getPuntos    : " + Util.tipoRespuesta(timeIni));
 			 return puntos;
-		}     
+		}
+        
+    public int registraDomicilio(final DomicilioVO domicilioVO, final int usuarioId)throws ServiceException
+    {
+        Logger.write(" >>> C o n s u l t a  a  B a s e  d e  D a t o s");
+        
+        Connection        conexionBD  = null;
+        CallableStatement sentenciaBD = null;
+        
+        String commSQL = "";
+        String commPRN = "";
+        
+        int  domicilioID = -1;
+        int  paramIndex  =  1;
+        long timeIni     =  0;
+        
+        try
+        {
+            commSQL = "{ ? = call  MIIUSACELL.PAMIISET2.FNDOMICILIOS_CRUD (?,?,?,?,?,?,?,?,?,?,?,?)}";
+            commPRN = "{ ? = call  MIIUSACELL.PAMIISET2.FNDOMICILIOS_CRUD ("
+                +"null,"
+                +domicilioVO.getCategoria()      + ","
+                +domicilioVO.getCalle()          + ","
+                +domicilioVO.getNumeroExterior() + ","
+                +domicilioVO.getNumeroInterior() + ","
+                +domicilioVO.getColonia()        + ","
+                +domicilioVO.getEstado()         + ","
+                +domicilioVO.getCiudad()         + ","
+                +domicilioVO.getPais()           + ","
+                +domicilioVO.getTipoDomicilio()  + ","
+                +usuarioId                       + ","
+                +Constantes.DOMICILIO_REGISTRO   + ")}";
+            
+            conexionBD = OracleConnection.getConnection(new MensajeLogBean());
+            
+            Logger.write("     Operacion              : ALTA_DOMICILIO" + usuarioId);
+            Logger.write("   + Parametros             +");
+            Logger.write("     commPRN                : " + commPRN);
+            
+            if(conexionBD != null){sentenciaBD=conexionBD.prepareCall(commSQL);}
+            
+            Logger.write("     Conexion BD Abierta    : true");
+            
+            if(sentenciaBD != null)
+            {
+                sentenciaBD.registerOutParameter(paramIndex++, OracleTypes.INTEGER );
+                sentenciaBD.setNull(  paramIndex++, OracleTypes.VARCHAR            );
+                sentenciaBD.setString(paramIndex++, domicilioVO.getCategoria()     );
+                sentenciaBD.setString(paramIndex++, domicilioVO.getCalle()         );
+                sentenciaBD.setString(paramIndex++, domicilioVO.getNumeroExterior());
+                sentenciaBD.setString(paramIndex++, domicilioVO.getNumeroInterior());
+                sentenciaBD.setString(paramIndex++, domicilioVO.getColonia()       );
+                sentenciaBD.setString(paramIndex++, domicilioVO.getEstado()        );
+                sentenciaBD.setString(paramIndex++, domicilioVO.getCiudad()        );
+                sentenciaBD.setString(paramIndex++, domicilioVO.getPais()          );
+                sentenciaBD.setInt(   paramIndex++, domicilioVO.getTipoDomicilio() );
+                sentenciaBD.setInt(   paramIndex++, usuarioId                      );
+                sentenciaBD.setInt(   paramIndex++, Constantes.DOMICILIO_REGISTRO  );
+                
+                Logger.write(" (+) Ejecutando consulta    : ");
+                timeIni = System.currentTimeMillis();
+                sentenciaBD.execute();
+                Logger.write(" (-) Ejecutando consulta    : " + Util.tipoRespuesta(timeIni));
+                
+                domicilioID = sentenciaBD.getInt(1);
+                
+                Logger.write("   + Respuesta              +");
+                Logger.write("     retorno                : " + domicilioID);
+            }
+        }
+        catch(Exception e)
+        {
+            throw new ServiceException(procesaMensajeSQLException(e.getMessage()));
+        }
+        finally
+        {
+            if(sentenciaBD != null){
+                try { sentenciaBD.close(); }
+                catch (SQLException sqlException) { Logger.write("     Detail  : (SQLException) " + sqlException.getMessage()); }
+            }
+            
+            if(conexionBD != null){
+                try { conexionBD.close(); }
+                catch (SQLException sqlException) { Logger.write("     Detail  : (SQLException) " + sqlException.getMessage()); }
+            }
+            
+            Logger.write("     Conexion BD Abierta    : false");
+        }
+        
+        Logger.timeTx(commPRN,"     Tiempo ejecucion       : " + Util.tipoRespuesta(timeIni));
+        return domicilioID;
+    }
+    
+    public int eliminaDomicilio(final DomicilioVO domicilioVO, final int usuarioId)throws ServiceException
+    {
+        Logger.write(" >>> C o n s u l t a  a  B a s e  d e  D a t o s");
+        Connection        conexionBD  = null;
+        CallableStatement sentenciaBD = null;
+        
+        String commSQL = "";
+        String commPRN = "";
+        
+        int  respuestaBD = -1;
+        int  paramIndex  =  1;
+        long timeIni     =  0;
+        
+        try
+        {
+            commSQL = "{ ? = call  MIIUSACELL.PAMIISET2.FNDOMICILIOS_CRUD (?,?,?,?,?,?,?,?,?,?,?,?)}";
+            commPRN = "{ ? = call  MIIUSACELL.PAMIISET2.FNDOMICILIOS_CRUD ("
+                + domicilioVO.getDomicilioID() + ","
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + "null,"
+                + usuarioId                    + ","
+                + Constantes.DOMICILIO_ELIMINA + ","
+                + ")}";
+            
+            conexionBD = OracleConnection.getConnection(new MensajeLogBean());
+            
+            Logger.write("     Operacion              : BAJA_DOMICILIO" + usuarioId);
+            Logger.write("   + Parametros             +");
+            Logger.write("     commPRN                : " + commPRN);
+            
+            if(conexionBD != null){sentenciaBD=conexionBD.prepareCall(commSQL);}
+            Logger.write("     Conexion BD Abierta    : true");
+            
+            if(sentenciaBD != null)
+            {
+                sentenciaBD.registerOutParameter(paramIndex++, OracleTypes.INTEGER );
+                sentenciaBD.setInt(  paramIndex++, domicilioVO.getDomicilioID() );
+                sentenciaBD.setNull( paramIndex++, OracleTypes.VARCHAR          );
+                sentenciaBD.setNull( paramIndex++, OracleTypes.VARCHAR          );
+                sentenciaBD.setNull( paramIndex++, OracleTypes.VARCHAR          );
+                sentenciaBD.setNull( paramIndex++, OracleTypes.VARCHAR          );
+                sentenciaBD.setNull( paramIndex++, OracleTypes.VARCHAR          );
+                sentenciaBD.setNull( paramIndex++, OracleTypes.VARCHAR          );
+                sentenciaBD.setNull( paramIndex++, OracleTypes.VARCHAR          );
+                sentenciaBD.setNull( paramIndex++, OracleTypes.VARCHAR          );
+                sentenciaBD.setNull( paramIndex++, OracleTypes.NUMBER           );
+                sentenciaBD.setInt(  paramIndex++, usuarioId                    );
+                sentenciaBD.setInt(  paramIndex++, Constantes.DOMICILIO_ELIMINA );
+                
+                Logger.write(" (+) Ejecutando consulta    : ");
+                timeIni = System.currentTimeMillis();
+                sentenciaBD.execute();
+                Logger.write(" (-) Ejecutando consulta    : " + Util.tipoRespuesta(timeIni));
+                
+                respuestaBD = sentenciaBD.getInt(1);
+                
+                Logger.write("   + Respuesta              +");
+                Logger.write("     retorno                : " + respuestaBD);
+            }
+        }
+        catch(Exception e)
+        {
+            throw new ServiceException(procesaMensajeSQLException(e.getMessage()));
+        }
+        finally
+        {
+            if (sentenciaBD != null){
+                try { sentenciaBD.close(); }
+                catch (SQLException sqlException) { Logger.write("     Detail  : (SQLException) " + sqlException.getMessage()); }
+            }
+            
+            if (conexionBD != null){
+                try { conexionBD.close(); }
+                catch (SQLException sqlException) { Logger.write("     Detail  : (SQLException) " + sqlException.getMessage()); }
+            }
+            
+            Logger.write("     Conexion BD Abierta    : false");
+        }
+        
+        Logger.timeTx(commPRN,"     Tiempo ejecucion       : " + Util.tipoRespuesta(timeIni));
+        return respuestaBD;
+    }
+    
+    public List<DomicilioVO> consultaDomicilios(final String dn) throws ServiceException
+    {
+        Logger.write(" >>> C o n s u l t a  a  B a s e  d e  D a t o s C o n s u m o s");
+        Connection conexionBD = null;
+        CallableStatement sentenciaSQL = null;
+        ResultSet resultSet = null;
+        
+        String commSQL="";
+        String commPRN="";
+        long timeIni = 0;
+        List<DomicilioVO> listaDomicilios = new ArrayList<DomicilioVO>();
+        
+        try
+        {
+            commSQL = "{ ? =  call MIIUSACELL.PAMIIGET2.FNGETDOMICILIOSUSUARIO(?)}";
+            commPRN = "{ ? =  call MIIUSACELL.PAMIIGET2.FNGETDOMICILIOSUSUARIO("+dn+")}";
+            
+            Logger.write("     Operacion              : consultaDomicilios");
+            Logger.write("   + Parametros             +");
+            Logger.write("     commPRN                : " + commPRN);
+            
+            conexionBD = OracleConnection.getConnection(new MensajeLogBean());
+            Logger.write("     Conexion BD Abierta    : true");
+            
+            if(conexionBD != null){
+                sentenciaSQL = conexionBD.prepareCall(commSQL);
+            }
+            
+            Logger.write("     Conexion BD Abierta    : true");
+            
+            sentenciaSQL.registerOutParameter(1, OracleTypes.CURSOR);
+            sentenciaSQL.setString(2, dn);
+            
+            Logger.write(" (+) Ejecutando consulta");
+            timeIni = System.currentTimeMillis();
+            sentenciaSQL.execute();
+            Logger.write(" (-) Ejecutando consulta    : " + Util.tipoRespuesta(timeIni));
+            resultSet = (ResultSet)sentenciaSQL.getObject(1);
+            
+            while(resultSet.next())
+            {
+                DomicilioVO itemDomicilio = new DomicilioVO();
+                
+                itemDomicilio.setDomicilioID   (resultSet.getInt   ("DOMICILIO_ID"       ));
+                itemDomicilio.setTipoDomicilio (resultSet.getInt   ("TIPO_DOMICILIO"     ));
+                itemDomicilio.setCategoria     (resultSet.getString("CATEGORIA_DOMICILIO"));
+                itemDomicilio.setCalle         (resultSet.getString("CALLE"              ));
+                itemDomicilio.setNumeroExterior(resultSet.getString("NUMEROEXTERIOR"     ));
+                itemDomicilio.setNumeroInterior(resultSet.getString("NUMEROINTERIOR"     ));
+                itemDomicilio.setColonia       (resultSet.getString("COLONIA"            ));
+                itemDomicilio.setEstado        (resultSet.getString("ESTADO"             ));
+                itemDomicilio.setCiudad        (resultSet.getString("CIUDAD_DELEGACION"  ));
+                itemDomicilio.setPais          (resultSet.getString("PAIS"               ));
+                
+                listaDomicilios.add(itemDomicilio);
+            }
+            
+            Logger.write("   + Respuesta              +");
+        }
+        catch (Exception e){
+            throw new ServiceException(procesaMensajeSQLException(e.getMessage()));
+        }
+        finally
+        {
+            if(sentenciaSQL != null){
+                try { sentenciaSQL.close(); }
+                catch(Exception exc) { Logger.write("     Detail  : (SQLException.a) " + exc.getMessage());}
+            }
+            
+            if(resultSet != null){
+                try{ resultSet.close(); }
+                catch(Exception exc) { Logger.write("     Detail  : (SQLException.b) " + exc.getMessage()); }
+            }
+            
+            if(conexionBD != null){
+                try { conexionBD.close(); }
+                catch(Exception exc) { Logger.write("     Detail  : (SQLException.c) " + exc.getMessage()); }
+            }
+            
+            Logger.write("     Conexion BD Abierta    : false");
+        }
+        
+        Logger.timeTx(commPRN,"     Tiempo ejecucion       : " + Util.tipoRespuesta(timeIni));
+        return listaDomicilios;
+    }
+    
+    public int vincularDomicilioTarjeta(final String tarjeta, final String dn, final int domicilioID)throws ServiceException
+    {
+        Logger.write(" >>> C o n s u l t a  a  B a s e  d e  D a t o s");
+        Connection        conexionBD  = null;
+        CallableStatement sentenciaBD = null;
+        
+        String commSQL = "";
+        String commPRN = "";
+        
+        int  respuestaBD = -1;
+        int  paramIndex  =  1;
+        long timeIni     =  0;
+        
+        try
+        {
+            commSQL = "{ ? = call  MIIUSACELL.PAMIISET2.FNUPDMIITATARJETACREDDOM(?,?,?)}";
+            commPRN = "{ ? = call  MIIUSACELL.PAMIISET2.FNUPDMIITATARJETACREDDOM("
+                + tarjeta     + ","
+                + dn          + ","
+                + domicilioID + ")}";
+            
+            conexionBD = OracleConnection.getConnection(new MensajeLogBean());
+            
+            Logger.write("     Operacion              : VINCULA_TARJETA_DOMICILIO (" + dn + ")");
+            Logger.write("   + Parametros             + ");
+            Logger.write("     commPRN                : " + commPRN);
+            if(conexionBD != null){sentenciaBD=conexionBD.prepareCall(commSQL);}
+            Logger.write("     Conexion BD Abierta    : true");
+            
+            if(sentenciaBD != null)
+            {
+                sentenciaBD.registerOutParameter(paramIndex++, OracleTypes.INTEGER );
+                sentenciaBD.setString(paramIndex++, tarjeta     );
+                sentenciaBD.setString(paramIndex++, dn          );
+                sentenciaBD.setInt(   paramIndex++, domicilioID );
+                
+                Logger.write(" (+) Ejecutando consulta    : ");
+                timeIni = System.currentTimeMillis();
+                sentenciaBD.execute();
+                Logger.write(" (-) Ejecutando consulta    : " + Util.tipoRespuesta(timeIni));
+                
+                respuestaBD = sentenciaBD.getInt(1);
+                
+                Logger.write("   + Respuesta              +");
+                Logger.write("     retorno                : " + respuestaBD);
+            }
+        }
+        catch(Exception e)
+        {
+            throw new ServiceException(procesaMensajeSQLException(e.getMessage()));
+        }
+        finally
+        {
+            if (sentenciaBD != null){
+                try { sentenciaBD.close(); }
+                catch (SQLException e) { Logger.write("     Detail  : (SQLException) " + e.getMessage()); }
+            }
+            
+            if (conexionBD != null){
+                try { conexionBD.close(); }
+                catch (SQLException e) { Logger.write("     Detail  : (SQLException) " + e.getMessage()); }
+            }
+            
+            Logger.write("     Conexion BD Abierta    : false");
+        }
+        
+        Logger.timeTx(commPRN,"     Tiempo ejecucion       : " + Util.tipoRespuesta(timeIni));
+        return respuestaBD;
+    }
+    
+    public int altaTarjetaDomicilio(final TarjetaVO datosTarjeta, final int domicilioId, final int usuarioId) throws ServiceException
+    {
+        Logger.write(" >>> C o n s u l t a  a  B a s e  d e  D a t o s");
+        Connection connOBJ = null;
+        CallableStatement stmsOBJ = null;
+        
+        String commSQL = "";
+        String commPRN = "";
+        int retorno=0;
+        long timeIni = 0;
+        int paramIndex = 1;
+        
+        try
+        {
+            commSQL = "{ ? = call  MIIUSACELL.PAMIISET2.FNINSMIITATARJETACREDALTADOM (?,?,?,?,?,?,?,?,?,?,?)}";
+            commPRN = "{ ? = call  MIIUSACELL.PAMIISET2.FNINSMIITATARJETACREDALTADOM ("+
+                datosTarjeta.getMarcaTarjeta()    + "," +
+                domicilioId                       + "," +
+                datosTarjeta.getNumeroTarjeta()   + "," +
+                datosTarjeta.getUltimosDigitos()  + "," +
+                datosTarjeta.getMesVencimiento()  + "," +
+                datosTarjeta.getAnioVencimiento() + "," +
+                datosTarjeta.getNombre()          + "," +
+                datosTarjeta.getaPaterno()        + "," +
+                datosTarjeta.getaMaterno()        + "," +
+                datosTarjeta.getCp()              + "," +
+                datosTarjeta.getDn()              + "," +
+                usuarioId                         + ")}";
+            
+            connOBJ = OracleConnection.getConnection(new MensajeLogBean());
+            
+            Logger.write("     Operacion              : altaTarjeta");
+            Logger.write("   + Parametros             +");
+            Logger.write("     commPRN                : " + commPRN);
+            
+            if(connOBJ != null){stmsOBJ=connOBJ.prepareCall(commSQL);}
+            Logger.write("     Conexion BD Abierta    : true");
+            if(stmsOBJ != null)
+            {
+                stmsOBJ.registerOutParameter(paramIndex++, OracleTypes.INTEGER    );
+                stmsOBJ.setInt   (paramIndex++, datosTarjeta.getMarcaTarjeta()    );
+                stmsOBJ.setInt   (paramIndex++, domicilioId                       );
+                stmsOBJ.setString(paramIndex++, datosTarjeta.getNumeroTarjeta()   );
+                stmsOBJ.setString(paramIndex++, datosTarjeta.getUltimosDigitos()  );
+                stmsOBJ.setString(paramIndex++, datosTarjeta.getMesVencimiento()  );
+                stmsOBJ.setString(paramIndex++, datosTarjeta.getAnioVencimiento() );
+                stmsOBJ.setString(paramIndex++, datosTarjeta.getNombre()          );
+                stmsOBJ.setString(paramIndex++, datosTarjeta.getaPaterno()        );
+                stmsOBJ.setString(paramIndex++, datosTarjeta.getaMaterno()        );
+                stmsOBJ.setString(paramIndex++, datosTarjeta.getCp()              );
+                stmsOBJ.setString(paramIndex++, datosTarjeta.getDn()              );
+                stmsOBJ.setInt   (paramIndex++, usuarioId                         );
+                
+                Logger.write(" (+) Ejecutando consulta    : ");
+                timeIni = System.currentTimeMillis();
+                stmsOBJ.execute();
+                Logger.write(" (-) Ejecutando consulta    : " + Util.tipoRespuesta(timeIni));
+                
+                retorno = stmsOBJ.getInt(1);
+                
+                Logger.write("   + Respuesta              +");
+                Logger.write("     retorno                : " + retorno);
+            }
+        }
+        catch(Exception e)
+        {
+            throw new ServiceException(procesaMensajeSQLException(e.getMessage()));
+        }
+        finally
+        {
+            if (stmsOBJ != null){
+                try { stmsOBJ.close(); }
+                catch (SQLException e) { Logger.write("     Detail  : (SQLException) " + e.getMessage()); }
+                
+            } 
+            
+            if (connOBJ != null){
+                try { connOBJ.close(); }
+                catch (SQLException e) { Logger.write("     Detail  : (SQLException) " + e.getMessage()); }
+            }
+            
+            Logger.write("     Conexion BD Abierta    : false");
+        }
+        
+        Logger.timeTx(commPRN,"     Tiempo ejecucion       : " + Util.tipoRespuesta(timeIni));
+        return retorno;
+    }
+    
+    public List<TarjetasFrecuentesVO> obtieneTarjetasFrecuenteDomicilio(final String dn) throws ServiceException
+    {
+        Logger.write(" >>> C o n s u l t a  a  B a s e  d e  D a t o s");
+        
+        Connection connOBJ = null;
+        CallableStatement stmsOBJ = null;
+        
+        String commSQL = "";
+        String commPRN = "";
+        
+        List<TarjetasFrecuentesVO> tarjetasList = new ArrayList<TarjetasFrecuentesVO>();
+        
+        ResultSet rs=null;
+        
+        long timeIni = 0;
+        int i = 1;
+        
+        try
+        {
+            commSQL = "{ ? = call MIIUSACELL.PAMIIGET2.FNGETMIITATARJETACREDXUSUDOMI(?)}";
+            commPRN = "{ ? = call MIIUSACELL.PAMIIGET2.FNGETMIITATARJETACREDXUSUDOMI(" + dn + ")";
+            
+            Logger.write("     Operacion              : obtieneNumeroFrecuente");
+            Logger.write("   + Parametros             +");
+            Logger.write("     commPRN                : " + commPRN);
+            
+            connOBJ = OracleConnection.getConnection(new MensajeLogBean());
+            
+            Logger.write("     Conexion BD Abierta    : true");
+            
+            if(connOBJ != null){stmsOBJ=connOBJ.prepareCall(commSQL);}
+            
+            if(stmsOBJ != null)
+            {
+                stmsOBJ.registerOutParameter(i++, OracleTypes.CURSOR );
+                stmsOBJ.setString(i++, dn);
+                
+                Logger.write(" (+) Ejecutando consulta    : ");
+                timeIni = System.currentTimeMillis();
+                stmsOBJ.execute();
+                Logger.write(" (-) Ejecutando consulta    : " + Util.tipoRespuesta(timeIni));
+                
+                rs=(ResultSet)stmsOBJ.getObject(1);
+                
+                TarjetasFrecuentesVO tarjetasSingle = null;
+                DomicilioVO domicilio = null;
+                
+                while (rs.next())
+                {
+                    tarjetasSingle = new TarjetasFrecuentesVO();                    
+                    
+                    tarjetasSingle.setNumeroTarjeta  (rs.getString("FCNUMEROTARJETA"    ));
+                    tarjetasSingle.setMesVencimiento (rs.getString("FCMESVENCIMIENTO"   ));
+                    tarjetasSingle.setAnioVencimiento(rs.getString("FCANIOVENCIMIENTO"  ));
+                    tarjetasSingle.setNombre         (rs.getString("FCNOMBRE"           ));
+                    tarjetasSingle.setApPaterno      (rs.getString("FCAPATERNO"         ));
+                    tarjetasSingle.setApMaterno      (rs.getString("FCAMATERNO"         ));
+                    tarjetasSingle.setCp             (rs.getString("FCCP"               ));
+                    tarjetasSingle.setUltimosDigitos (rs.getString("FCULTIMOSDIGITOS"   ));
+                    tarjetasSingle.setMarcaTarjetaId (rs.getInt   ("FICVEMARCATARJETAID"));
+                    
+                    if(rs.getInt("DOMICILIO_ID"    ) > 0){
+                    	domicilio = new DomicilioVO();
+                    	domicilio.setDomicilioID	(rs.getInt   ("DOMICILIO_ID" 		));
+                    	domicilio.setCalle			(rs.getString("CALLE"    			));
+                    	domicilio.setNumeroExterior	(rs.getString("NUMEROEXTERIOR"  	));
+                    	domicilio.setNumeroInterior	(rs.getString("NUMEROINTERIOR"  	));
+                    	domicilio.setColonia		(rs.getString("COLONIA"    			));
+                    	domicilio.setEstado			(rs.getString("ESTADO"    			));
+                    	domicilio.setCiudad			(rs.getString("CIUDAD_DELEGACION"   ));
+                    	domicilio.setPais			(rs.getString("PAIS"    			));
+                    	domicilio.setCategoria		(rs.getString("CATEGORIA"  			));
+                    	domicilio.setTipoDomicilio	(rs.getInt   ("TIPO_DOMICILIO" 		));
+                    	
+                    	tarjetasSingle.setDomicilio(domicilio);
+                    }
+                    
+                    tarjetasList.add(tarjetasSingle);
+                }
+                
+                Logger.write("   + Respuesta              +");
+                Logger.write("     retorno.size           : " + tarjetasList.size());
+            }
+        }catch(Exception e){
+            throw new ServiceException(procesaMensajeSQLException(e.getMessage()));
+        }
+        finally
+        {
+            if (rs != null){
+                try { rs.close(); }
+                catch (SQLException e) { Logger.write("     Detail  : (SQLException.a) " + e.getMessage()); }
+            }
+            
+            if (stmsOBJ != null){
+                try { stmsOBJ.close(); }
+                catch (SQLException e) { Logger.write("     Detail  : (SQLException.b) " + e.getMessage()); }
+            }
+            
+            if (connOBJ != null){
+                try { connOBJ.close(); }
+                catch (SQLException e) { Logger.write("     Detail  : (SQLException.c) " + e.getMessage()); }
+            }
+            
+            Logger.write("     Conexion BD Abierta    : false");
+        }
+        
+        Logger.timeTx(commPRN,"     Tiempo ejecucion       : " + Util.tipoRespuesta(timeIni));
+        return tarjetasList;
+    }
+    
+    private String procesaMensajeSQLException(final String mensaje){
+        String respuesta = mensaje;
+        if(StringUtils.contains(mensaje, "[ctrl]")){
+            String[] secciones = mensaje.split("ctrl]");
+            secciones = secciones[1].split("\\n");
+            respuesta = secciones[0].trim();
+        }
+        return respuesta;
+    }
 }

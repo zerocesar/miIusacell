@@ -128,7 +128,9 @@ public abstract class  Constantes {
   //llave descencriptar aes128
   public static final String LLAVE_DESENCRIPTAR_AES="GrUPoSaLInaSsACv";
   
-  
+  public static final int DOMICILIO_REGISTRO = 1;
+  public static final int DOMICILIO_ACTUALIZA = 3;
+  public static final int DOMICILIO_ELIMINA = 4;
   
   public static final String PARAMETRO_DISTRIBUIDOR_01="AGhAxzwOwKEbI12XQ1KNjQ=-";
   public static final String PARAMETRO_DISTRIBUIDOR_02="AGhAxzwOwKEbI12XQ1KNjQ=-";

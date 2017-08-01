@@ -125,8 +125,11 @@ public class Autorizador {
 			if(StringUtils.isNoneEmpty(address.getMunicipio())){
 				customerCounty = address.getMunicipio();
 			}
+			if(StringUtils.isNoneEmpty(address.getCiudad())){
+				customerCounty = address.getCiudad();
+			}
 			if(StringUtils.isNoneEmpty(address.getEstado())){
-				customerState = address.getEstado();
+				customerState = getValueStateByName(address.getEstado());
 			}
 			if(StringUtils.isNoneEmpty(address.getColonia())){
 				customerNeighborhood = address.getColonia();
@@ -136,6 +139,9 @@ public class Autorizador {
 			}
 			if(StringUtils.isNoneEmpty(address.getCodigoPostal())){
 				customerPostalCode = address.getCodigoPostal();
+			}
+			if(StringUtils.isNoneEmpty(address.getNumeroExterior())){
+				customerStreetNumber = address.getNumeroExterior();
 			}
 		}else{
 			try{
@@ -627,6 +633,18 @@ public class Autorizador {
 		return response;
 	}
 	
+	private String getValueStateByName(String estado){				
+		String response = "";
+		if(estado == null){
+			response = "";
+		}else{	
+			Map<String,String> catalogStates = getCatalogStatesByName();
+			estado = estado.toUpperCase().trim();
+			response = (catalogStates.get(estado) == null) ? "" : catalogStates.get(estado);
+		}
+		return response;
+	}
+	
 	private Map<String,String> getCatalogStates(){
 		Map<String,String> catalogStates = new HashMap<String, String>();
 		catalogStates.put("AGS", "AS");//Aguascalientes
@@ -661,6 +679,44 @@ public class Autorizador {
 		catalogStates.put("VER", "VZ");//Veracruz
 		catalogStates.put("YUC", "YN");//Yucatán
 		catalogStates.put("ZAC", "ZS");//Zacatecas
+		
+		return catalogStates;
+	}	
+	
+	private Map<String,String> getCatalogStatesByName(){
+		Map<String,String> catalogStates = new HashMap<String, String>();
+		catalogStates.put("AGUASCALIENTES", "AS");//Aguascalientes
+		catalogStates.put("BAJA CALIFORNIA NORTE", "BC");//Baja California
+		catalogStates.put("BAJA CALIFORNIA SUR", "BS");//Baja California Sur
+		catalogStates.put("CAMPECHE", "CC");//Campeche
+		catalogStates.put("CHIAPAS", "CS");//Chiapas
+		catalogStates.put("CHIHUAHUA", "CH");//Chihuahua
+		catalogStates.put("COAHUILA", "CL");//Coahuila
+		catalogStates.put("COLIMA", "CM");//Colima
+		catalogStates.put("DISTRITO FEDERAL", "DF");//Distrito Federal
+		catalogStates.put("DURANGO", "DG");//Durango
+		catalogStates.put("GUANAJUATO", "GT");//Guanajuato
+		catalogStates.put("GUERRERO", "GR");//Guerrero
+		catalogStates.put("HIDALGO", "HG");//Hidalgo
+		catalogStates.put("JALISCO", "JC");//Jalisco
+		catalogStates.put("ESTADO DE MEXICO", "MC");//Estado de México
+		catalogStates.put("MICHOACAN", "MN");//Michoacán
+		catalogStates.put("MORELOS", "MS");//Morelos
+		catalogStates.put("NAYARIT", "NT");//Nayarit
+		catalogStates.put("NUEVO LEON", "NL");//Nuevo León
+		catalogStates.put("OAXACA", "OC");//Oaxaca
+		catalogStates.put("PUEBLA", "PL");//Puebla
+		catalogStates.put("QUERETARO", "QT");//Querétaro
+		catalogStates.put("QUINTANA ROO", "QR");//Quintana Roo
+		catalogStates.put("SAN LUIS POTOSI", "SP");//San Luis Potosí
+		catalogStates.put("SINALOA", "SL");//Sinaloa
+		catalogStates.put("SONORA", "SR");//Sonora
+		catalogStates.put("TABASCO", "TC");//Tabasco
+		catalogStates.put("TAMAULIPAS", "TS");//Tamaulipas
+		catalogStates.put("TLAXCALA", "TL");//Tlaxcala
+		catalogStates.put("VERACRUZ", "VZ");//Veracruz
+		catalogStates.put("YUCATAN", "YN");//Yucatán
+		catalogStates.put("ZACATECAS", "ZS");//Zacatecas
 		
 		return catalogStates;
 	}	

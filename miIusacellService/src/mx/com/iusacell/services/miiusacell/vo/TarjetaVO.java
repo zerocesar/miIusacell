@@ -10,7 +10,7 @@ public class TarjetaVO {
 	private String aMaterno; 
 	private String cp; 
 	private String ultimosDigitos; 
-	private String dn; 
+	private String dn; 		
 	
 	public int getMarcaTarjeta() {
 		return marcaTarjeta;
@@ -69,7 +69,7 @@ public class TarjetaVO {
 	public String getDn() {
 		return dn;
 	}
-	public void setDn(String dn) {
+	public void setDn(final String dn) {
 		this.dn = dn;
-	}
+	}	
 }

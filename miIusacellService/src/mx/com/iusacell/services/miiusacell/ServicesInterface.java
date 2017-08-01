@@ -47,26 +47,28 @@ import mx.com.iusacell.services.miiusacell.vo.DetalleFacturaVO;
 import mx.com.iusacell.services.miiusacell.vo.DetalleSaldoVO;
 import mx.com.iusacell.services.miiusacell.vo.DetalleTotalesLlamadas;
 import mx.com.iusacell.services.miiusacell.vo.DetalleTotalesVO;
+import mx.com.iusacell.services.miiusacell.vo.DomicilioVO;
 import mx.com.iusacell.services.miiusacell.vo.ErrorVO;
 import mx.com.iusacell.services.miiusacell.vo.EstadoCuentaVO;
 import mx.com.iusacell.services.miiusacell.vo.FacturaVirtualDetalleVO;
 import mx.com.iusacell.services.miiusacell.vo.GetCitasPendientesXDNVO;
 import mx.com.iusacell.services.miiusacell.vo.GetHorariosDisponiblesCallCenterVO;
 import mx.com.iusacell.services.miiusacell.vo.ImagenEquipoVO;
+import mx.com.iusacell.services.miiusacell.vo.MensajeMailVO;
 import mx.com.iusacell.services.miiusacell.vo.Mensajes;
 import mx.com.iusacell.services.miiusacell.vo.Navegacion;
-import mx.com.iusacell.services.miiusacell.vo.ObtenerDetallesServicesClassVO;
-import mx.com.iusacell.services.miiusacell.vo.PagoFacturaResponseVO;
-import mx.com.iusacell.services.miiusacell.vo.MensajeMailVO;
 import mx.com.iusacell.services.miiusacell.vo.NumerosFrecuentesVO;
 import mx.com.iusacell.services.miiusacell.vo.ObtenerDescripcionPlanesVO1;
+import mx.com.iusacell.services.miiusacell.vo.ObtenerDetallesServicesClassVO;
 import mx.com.iusacell.services.miiusacell.vo.ObtieneEstadoMunicipioVO;
 import mx.com.iusacell.services.miiusacell.vo.ObtienePoblacionesVO;
+import mx.com.iusacell.services.miiusacell.vo.PagoFacturaResponseVO;
 import mx.com.iusacell.services.miiusacell.vo.PermisosClienteVO;
 import mx.com.iusacell.services.miiusacell.vo.Referencia;
 import mx.com.iusacell.services.miiusacell.vo.ReprogramacionVO;
 import mx.com.iusacell.services.miiusacell.vo.ResponseCancelacionVO;
 import mx.com.iusacell.services.miiusacell.vo.ResponseCitaVO;
+import mx.com.iusacell.services.miiusacell.vo.ServicioVO;
 import mx.com.iusacell.services.miiusacell.vo.ServiciosAdicionalesVO;
 import mx.com.iusacell.services.miiusacell.vo.ServiciosBundlesAdicionales;
 import mx.com.iusacell.services.miiusacell.vo.ServiciosContratarVO;
@@ -77,11 +79,11 @@ import mx.com.iusacell.services.miiusacell.vo.TiposDeAtencionVO;
 import mx.com.iusacell.services.miiusacell.vo.UfmiVO;
 import mx.com.iusacell.services.miiusacell.vo.WalletsDetalleVO;
 import mx.com.iusacell.services.miiusacell.vo.catalogoCambioPlanVO;
+import mx.com.iusacell.services.miiusacell.vo.GestionServiciosWS.RespuestaServicios;
+import mx.com.iusacell.services.miiusacell.vo.autorizador.AddressVO;
 import mx.com.iusacell.services.miiusacell.vo.autorizador.TransactionVO;
 import mx.com.iusacell.services.miiusacell.vo.messageMail.MessageMailBean;
 import mx.com.iusacell.services.miiusacell.vo.messageMail.RespuestaMensajeBean;
-import mx.com.iusacell.services.miiusacell.vo.ServicioVO;
-import mx.com.iusacell.services.miiusacell.vo.GestionServiciosWS.RespuestaServicios;
 
 public interface ServicesInterface {
 
@@ -104,7 +106,7 @@ public interface ServicesInterface {
 	public ContratarServiciosVO contratarServicios(String user, String pass, String dn, AltaServicioEtakVO datosAltaEtak, AltaServicioLegacyVO datosAlta, AltaServicioPrepagoLegacyVO datosAltaPrepago, String token) throws Throwable;
 	public ContratarServiciosVO bajaServicios(String user, String pass, String mdn, String idServicio, AltaServicioLegacyVO datosAlta, String token) throws Throwable;
 	public List<DatosServiciosAContratarVO> serviciosAContratar(String user, String pass, String dn, String token) throws Throwable;
-	public String registroTarjetas(String user, String pass, TarjetaVO tarjeta, int usuarioId, String token) throws Throwable;
+	public String registroTarjetas(String user, String pass, TarjetaVO tarjeta, int domicilioID, int usuarioId, String token) throws Throwable;
 	public String registroNumFrecuentes(String user, String pass,String dn, String nombre, String telefono, int usuarioId, String token) throws Throwable;
 	public int editarPerfil(String user, String pass, String dn, String nombre, String apPaterno, String apMaterno, String correo, String password, String fechaNacimiento, String fotografia, int usuarioId, String token) throws Throwable;
 	public List<NumerosFrecuentesVO> obtieneNumeros(String user, String pass, String dn, String token) throws Throwable;
@@ -211,8 +213,8 @@ public interface ServicesInterface {
 	public String getIdOperador(String user, String pass, String dn, String token) throws Throwable;
 	public AbonoTiempoAireVO abonoTiempoAireBitFP(String user,String pass, String dn, String dnParaAbono, int anioExpira, String cdgSeguridad, String concepto, Double importe, int mesExpira, String numTarjeta, String tipoTarjeta, String ip, Long secuencia, String password, int tipoPlataforma, int compania, int sistemaOrigen, int dispositivo, String fingerPrint, String token) throws Throwable;
 	public PagoFacturaResponseVO pagarFacturaFP(String user, String pass, String dn, CardVO tarjeta, int tipoPlataforma, int compania, int sistemaOrigen, int dispositivo, String password, String fingerPrint, String token) throws Throwable;
-	public AbonoTiempoAireVO abonoTiempoAireBitFingerP(String user,String pass, String dn, String dnParaAbono, int anioExpira, String cdgSeguridad, String concepto, Double importe, int mesExpira, String numTarjeta, String tipoTarjeta, String ip, Long secuencia, String password, int tipoPlataforma, int compania, int sistemaOrigen, int dispositivo, String email, String fingerPrint, String token) throws Throwable;
-	public PagoFacturaResponseVO pagarFacturaFingerP(String user, String pass, String dn, CardVO tarjeta, int tipoPlataforma, int compania, int sistemaOrigen, int dispositivo, String password, String ip, String email, String fingerPrint, String token) throws Throwable;
+	public AbonoTiempoAireVO abonoTiempoAireBitFingerP(String user,String pass, String dn, String dnParaAbono, int anioExpira, String cdgSeguridad, String concepto, Double importe, int mesExpira, String numTarjeta, String tipoTarjeta, String ip, Long secuencia, String password, int tipoPlataforma, int compania, int sistemaOrigen, int dispositivo, String email, String fingerPrint, AddressVO address, String token) throws Throwable;
+	public PagoFacturaResponseVO pagarFacturaFingerP(String user, String pass, String dn, CardVO tarjeta, int tipoPlataforma, int compania, int sistemaOrigen, int dispositivo, String password, String ip, String email, String fingerPrint, AddressVO address, String token) throws Throwable;
 	public ConsultaSrScVO getConsultaSRSC(String user, String pass, String dn, String token) throws Throwable;
 	
 	public ResponseCancelacionVO getFolioCancelacion(String user, String pass, String dn, String dnContacto,String strNota,  String token) throws Throwable;
@@ -225,4 +227,9 @@ public interface ServicesInterface {
 	public RespuestaServicios operacionServicioPaq(String user, String pass, String idLinea, final String passAutorizacion, int tipo, Servicio[] servicios, String token) throws Throwable;
 	public AbonoTiempoAireVO buyProductsOnline(String user,String pass, TransactionVO transaction, String token) throws Throwable;
 	public BankCardAdditionalInfoVO getAditionalCardInfo(String user, String pass,String prefix, String token) throws Throwable;
+	
+	public int agregaDomicilio(         String user, String pass, String dn, DomicilioVO domicilioVO, int usuarioId, String token) throws Throwable;
+	public int eliminaDomicilio(        String user, String pass, String dn, DomicilioVO domicilioVO, int usuarioId, String token) throws Throwable;
+	public int vincularDomicilioTarjeta(String user, String pass,  String dn, String numeroTarjeta,int domicilioID, int usuarioId, String token) throws Throwable;
+	public List<DomicilioVO> getDomicilios(  String user, String pass, String dn, int usuarioId, String token) throws Throwable;
 }

@@ -40,4 +40,19 @@ public abstract class ObtieneFrecuentes {
 		}
 		return respuesta;
 	}
+	
+	public static List<TarjetasFrecuentesVO> obtieneTarjetasFrecuenteDomicilio(final String dn) throws ServiceException
+	{
+		List<TarjetasFrecuentesVO> respuesta = new ArrayList<TarjetasFrecuentesVO>();
+		OracleProcedures oracle = new OracleProcedures();
+		try
+		{
+			respuesta = oracle.obtieneTarjetasFrecuenteDomicilio(dn);
+		}
+		catch(Exception e)
+		{
+			throw new ServiceException(e.getMessage());
+		}
+		return respuesta;
+	}
 }

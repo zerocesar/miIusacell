@@ -10,6 +10,7 @@ import mx.com.iusacell.services.miiusacell.arquitectura.autorizador.ValidatorCha
 import mx.com.iusacell.services.miiusacell.masivo.model.OracleProcedures;
 import mx.com.iusacell.services.miiusacell.vo.AbonoTiempoAireVO;
 import mx.com.iusacell.services.miiusacell.vo.ValidarErrorTarjetaVO;
+import mx.com.iusacell.services.miiusacell.vo.autorizador.AddressVO;
 import mx.com.iusacell.services.miiusacell.vo.autorizador.Transaction;
 import mx.com.iusacell.services.miusacell.call.CallServiceAbonoTA;
 import mx.com.iusacell.services.miusacell.call.CallServiceAbonoTiempoAireLegacy;
@@ -294,7 +295,7 @@ public class AbonoTiempoAireAutorizador implements AbonoTiempoAireIn{
 	public AbonoTiempoAireVO flujoFingerPrint(final String token,final String dn,final String dnParaAbono,final int anioExpira, 
 			final String cdgSeguridad,final String concepto,final  Double importe,final int mesExpira,final String numTarjeta, 
 			String tipoTarjeta,final String ip,final Long secuencia,final String password, 
-			final int tipoPlataforma,final String idIdentificar, final String email, final String fingerPrint, final boolean isFlowATT) throws ServiceException
+			final int tipoPlataforma,final String idIdentificar, final String email, final String fingerPrint,final AddressVO address, final boolean isFlowATT) throws ServiceException
 			{
 //		CallServiceAbonoTiempoAireETAK abonoTiempoAireETAK = new CallServiceAbonoTiempoAireETAK();
 		CallServiceAbonoTiempoAireLegacy abonoTiempoaireLegacy = new CallServiceAbonoTiempoAireLegacy();
@@ -429,7 +430,7 @@ public class AbonoTiempoAireAutorizador implements AbonoTiempoAireIn{
 
 				respAutorizador = autorizadorBusiness.applyKeyedCharge(numTarjeta, cdgSeguridad, mesExpira, anioExpira,
 						importe, tipoPlataforma, businessId, sRegion, storeId, concepto, fingerPrint, Integer.valueOf(sMesesSinIntereses), 
-						dnParaAbono, ip, email, tipoCargo, null, isFlowATT); 						
+						dnParaAbono, ip, email, tipoCargo, address, isFlowATT); 						
 
 				try{
 					oracle.cajaRespuesta(idIdentificar,0,respAutorizador.getBankCode(), respAutorizador.getIdRegistro(), 
