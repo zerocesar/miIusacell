@@ -17,6 +17,7 @@ import mx.com.iusacell.services.miusacell.call.CallServiceBajaServicios;
 import mx.com.iusacell.services.miusacell.call.CallServiceFocalizacion;
 import mx.com.iusacell.services.miusacell.call.CallServiceServiciosContratos;
 import mx.com.iusacell.services.miusacell.util.ParseXMLFile;
+import mx.com.iusacell.services.miusacell.util.Utilerias;
 
 public abstract class BajaServicio {
 	
@@ -93,6 +94,7 @@ public abstract class BajaServicio {
 		String sResponse = "";
 		CallServiceAltaBajaServicios servicioLEGACY = new CallServiceAltaBajaServicios();
 		ContratarServiciosVO returnContratoServ = new ContratarServiciosVO();
+		ContratarServiciosVO returnLineaPrepago = new ContratarServiciosVO();
 		CallServiceFocalizacion focalizacion = new CallServiceFocalizacion();
 		DetalleFocalizacionVO descripcion = new DetalleFocalizacionVO();
 		CallServiceServiciosContratos serviciosContratados =  new CallServiceServiciosContratos();
@@ -200,10 +202,23 @@ public abstract class BajaServicio {
             	   validaFecha = "mayor";
                }
             }
-			  
+            boolean validaVigencia=Utilerias.validaServiciosVigencia(datosAlta.getServicios());
+			if (validaVigencia){
+				validaFecha="mayor";
+			}
 			if(descripcion != null && descripcion.getServicio() != null && descripcion.getSubservicio() != null && !descripcion.getServicio().equals("0") && !descripcion.getSubservicio().equals("0") && activoRegistro){
 					if(descripcion.getIsPostpagoOrHibrido() != null && !descripcion.getIsPostpagoOrHibrido().equals("")){
-					   if(validaFecha.equals("mayor")){	
+						if(validaFecha.equals("mayor")){
+//				    		TODO: German Se Valida si es Hibrido para dar de baja en SServicios
+							boolean validaServiciosBaja= Utilerias.validaServiciosBaja(datosAlta, descripcion.getIsPostpagoOrHibrido());
+							if((descripcion.getIsPostpagoOrHibrido().equals("HIBRIDO")) && (validaServiciosBaja))
+				            {
+								returnLineaPrepago = Utilerias.bajaServicioPrepago(mdn, datosAlta.getServicios());
+								if(!returnLineaPrepago.getOperationCode().equals("0")){
+									throw new ServiceException(" [CTRL] El servicio :: " + datosAlta.getServicios() + " No pudo darse de Baja");
+								}
+				            }
+					   	
 					        String userMod = "APP";
 							try
 							  {
@@ -235,9 +250,6 @@ public abstract class BajaServicio {
 				}
 				throw new ServiceException(" [CTRL] IdServicio Invalido");
 			}
-			
-			
-			
 			
 		}catch(Exception e)
 		{

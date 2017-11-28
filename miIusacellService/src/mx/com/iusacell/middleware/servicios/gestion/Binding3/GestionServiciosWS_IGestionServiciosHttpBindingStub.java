@@ -312,30 +312,30 @@ public class GestionServiciosWS_IGestionServiciosHttpBindingStub extends org.apa
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {linea, usuario, cobro, new java.lang.Integer(operacion)});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        else {
-            extractAttachments(_call);
-            try {
-                return (mx.com.iusacell.middleware.servicios.gestion.RespuestaServicios) _resp;
-            } catch (java.lang.Exception _exception) {
-                return (mx.com.iusacell.middleware.servicios.gestion.RespuestaServicios) org.apache.axis.utils.JavaUtils.convert(_resp, mx.com.iusacell.middleware.servicios.gestion.RespuestaServicios.class);
-            }
-        }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-    if (axisFaultException.detail != null) {
-        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
-              throw (java.rmi.RemoteException) axisFaultException.detail;
-         }
-        if (axisFaultException.detail instanceof mx.com.iusacell.comun.Falta) {
-              throw (mx.com.iusacell.comun.Falta) axisFaultException.detail;
-         }
-   }
-  throw axisFaultException;
-}
-    }
+		 try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {linea, usuario, cobro, new java.lang.Integer(operacion)});
+		
+		        if (_resp instanceof java.rmi.RemoteException) {
+		            throw (java.rmi.RemoteException)_resp;
+		        }
+		        else {
+		            extractAttachments(_call);
+		            try {
+		                return (mx.com.iusacell.middleware.servicios.gestion.RespuestaServicios) _resp;
+		            } catch (java.lang.Exception _exception) {
+		                return (mx.com.iusacell.middleware.servicios.gestion.RespuestaServicios) org.apache.axis.utils.JavaUtils.convert(_resp, mx.com.iusacell.middleware.servicios.gestion.RespuestaServicios.class);
+		            }
+		        }
+			  } catch (org.apache.axis.AxisFault axisFaultException) {
+			    if (axisFaultException.detail != null) {
+			        if (axisFaultException.detail instanceof java.rmi.RemoteException) {
+			              throw (java.rmi.RemoteException) axisFaultException.detail;
+			         }
+			        if (axisFaultException.detail instanceof mx.com.iusacell.comun.Falta) {
+			              throw (mx.com.iusacell.comun.Falta) axisFaultException.detail;
+			         }
+			   }
+			  throw axisFaultException;
+			}
+  }
 
 }

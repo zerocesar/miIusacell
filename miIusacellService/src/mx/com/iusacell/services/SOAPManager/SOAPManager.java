@@ -116,7 +116,7 @@ public class SOAPManager
                 //Obtenemos la respuesta del servicio web           
                 isResponse = response.getEntity().getContent();
                 InputStream in = isResponse;
-                reader = new InputStreamReader(in);
+                reader = new InputStreamReader(in,"UTF-8");
                 sResponse = IOUtils.getStringFromReader(reader);
                 Logger.timeWs(sURLWebService,"     Tiempo ejecucion ws    : " + Util.tipoRespuesta(timeIni));
             }

@@ -47,6 +47,7 @@ import mx.com.iusacell.services.miiusacell.vo.DetalleFacturaVO;
 import mx.com.iusacell.services.miiusacell.vo.DetalleSaldoVO;
 import mx.com.iusacell.services.miiusacell.vo.DetalleTotalesLlamadas;
 import mx.com.iusacell.services.miiusacell.vo.DetalleTotalesVO;
+import mx.com.iusacell.services.miiusacell.vo.DireccionVO;
 import mx.com.iusacell.services.miiusacell.vo.ErrorVO;
 import mx.com.iusacell.services.miiusacell.vo.EstadoCuentaVO;
 import mx.com.iusacell.services.miiusacell.vo.FacturaVirtualDetalleVO;
@@ -225,4 +226,5 @@ public interface ServicesInterface {
 	public RespuestaServicios operacionServicioPaq(String user, String pass, String idLinea, final String passAutorizacion, int tipo, Servicio[] servicios, String token) throws Throwable;
 	public AbonoTiempoAireVO buyProductsOnline(String user,String pass, TransactionVO transaction, String token) throws Throwable;
 	public BankCardAdditionalInfoVO getAditionalCardInfo(String user, String pass,String prefix, String token) throws Throwable;
+	public DireccionVO mapaObtieneColXCPSepomex(String user, String pass,String codigoPostal, String token) throws Throwable;
 }

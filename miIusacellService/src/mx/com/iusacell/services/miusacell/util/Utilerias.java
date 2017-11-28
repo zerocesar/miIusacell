@@ -32,14 +32,23 @@ import org.codehaus.xfire.transport.http.XFireServletController;
 
 import com.thoughtworks.xstream.core.util.Base64Encoder;
 
+import mx.com.iusacell.comun.Linea;
+import mx.com.iusacell.comun.Servicio;
+import mx.com.iusacell.comun.Usuario;
+import mx.com.iusacell.comun.Vigencia;
 import mx.com.iusacell.services.miiusacell.arquitectura.Logger;
 import mx.com.iusacell.services.miiusacell.arquitectura.MensajeLogBean;
 import mx.com.iusacell.services.miiusacell.masivo.model.OracleProcedures;
+import mx.com.iusacell.services.miiusacell.vo.AltaServicioLegacyVO;
 import mx.com.iusacell.services.miiusacell.vo.BankCardAdditionalInfoVO;
 import mx.com.iusacell.services.miiusacell.vo.CatatoloGetVO;
 import mx.com.iusacell.services.miiusacell.vo.ConsumoFechaTablaVO;
 import mx.com.iusacell.services.miiusacell.vo.ConsumoFechaVO;
+import mx.com.iusacell.services.miiusacell.vo.ContratarServiciosVO;
 import mx.com.iusacell.services.miiusacell.vo.SaldosFechaVO;
+import mx.com.iusacell.services.miiusacell.vo.ServiciosAdicionalesVO;
+import mx.com.iusacell.services.miusacell.call.CallServiceObtenerDetallesService;
+import mx.com.iusacell.services.miusacell.call.CallServiceSServicios;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -998,4 +1007,140 @@ public class Utilerias {
         }
         return (dias);
     }
+
+//	TODO: GAVG Se agrega Funcion para validar servicios mutuamente excluyentes (277)
+	public static String validaServicioExcluir(String idServicioContratar, List<ServiciosAdicionalesVO> resServAdicionales){
+		OracleProcedures oracle = new OracleProcedures();
+		String[] parametrosSplit = null;
+		String idServicioExcluir ="";
+		String[] ServiciosExcluyentesSplit = null;
+		String respuesta = "";
+		
+		try{
+			String cadenaServicios =oracle.getValorParametro(277);
+			parametrosSplit = cadenaServicios.split(",");
+		}catch (Exception e){
+			parametrosSplit[0] ="1238|1211:";
+			parametrosSplit[1] ="1211|1238:";
+		}
+		for(int j=0; j<parametrosSplit.length ; j++){
+			idServicioExcluir= parametrosSplit[j].substring(0,parametrosSplit[j].indexOf("|"));
+			if(idServicioContratar.contains(idServicioExcluir)){
+				ServiciosExcluyentesSplit=parametrosSplit[j].substring(parametrosSplit[j].indexOf("|")+1,parametrosSplit[0].length()).split(":");
+				for (String idServicioExcluyente:ServiciosExcluyentesSplit){
+					for(int k=0; k<resServAdicionales.size(); k++){
+						if(idServicioExcluyente.equals(resServAdicionales.get(k).getIdServicio())&& resServAdicionales.get(k).getStatus()==1){
+							respuesta = resServAdicionales.get(k).getServicio();
+							break;
+						}
+					}
+					if(!respuesta.equals("")){
+						break;
+					}
+				}
+			}
+			if(!respuesta.equals("")){
+				break;
+			}
+		}
+		return respuesta;
+	}
+	public static boolean validaServiciosBaja(AltaServicioLegacyVO datosAlta,String descripcion){
+		boolean respuesta= false;
+		OracleProcedures oracle = new OracleProcedures();
+		String serviciosPermitidos;
+		try{
+			serviciosPermitidos = oracle.getValorParametro(276);
+		}catch (Exception e){
+			serviciosPermitidos="1237,1236,1235,1234,1238,1211,";
+		}
+        serviciosPermitidos = (serviciosPermitidos != null) ? serviciosPermitidos.toLowerCase() : "";
+        final String[] arrayServPerm = serviciosPermitidos.split(",");
+        
+        for(final String msg : arrayServPerm)
+        {
+            if(datosAlta.getServicios().contains(msg))
+            {
+            	respuesta = true;
+                if(descripcion.equals("POSPAGO")) respuesta = false;
+                break;
+            }
+        }
+		return respuesta;
+	}
+	public static boolean validaServiciosVigencia(String idServicio){
+		boolean respuesta= false;
+		OracleProcedures oracle = new OracleProcedures();
+		String[] parametrosSplit = null;
+		String cadenaServicios="";
+		try{
+				cadenaServicios = oracle.getValorParametro(276);
+			}catch (Exception e){
+				cadenaServicios="1237,1236,1235,1234,1238,1211,";
+		}
+		parametrosSplit = cadenaServicios.split(",");
+		for(final String msg : parametrosSplit){
+			if(idServicio.contains(msg)){
+				respuesta=true;
+				break;
+			}
+		}
+		return respuesta;
+	}
+   public static ContratarServiciosVO bajaServicioPrepago(String dn, String idServicio) throws ServiceException{
+	   CallServiceObtenerDetallesService obtieneIdLinea = new CallServiceObtenerDetallesService();
+	   ContratarServiciosVO respuesta = new ContratarServiciosVO();
+	   final CallServiceSServicios wsBajaServicio = new CallServiceSServicios();
+	   String responseEq = obtieneIdLinea.obtenerEquivalencia(idServicio);
+	   String[] equivalencia = new String[2];
+	   String idLineaPrepago = "";
+	   String respuestaSSBajaServicio = "";
+	   
+		if(responseEq != null && !responseEq.equals("")){
+           equivalencia = ParseXMLFile.parseEquivalencia(responseEq);
+       }
+		
+       String sResponseP = "";
+       sResponseP = obtieneIdLinea.obtenerIdLinea(dn);
+       if(sResponseP != null && !sResponseP.equals("")){
+           idLineaPrepago = ParseXMLFile.parseIdLinea(sResponseP);
+       }
+       if(idLineaPrepago == null || idLineaPrepago.length() == 0){
+	       	respuesta.setMessageCode("Sin informacion de la linea");
+	       	respuesta.setOperationCode("01");
+       }else{
+       	Vigencia[] vigencias = null;
+       	vigencias = new Vigencia[1];
+       	vigencias[0] = new Vigencia();
+       	vigencias[0].setCantidad(0);
+       	Servicio[] servicios = null;
+       	servicios = new Servicio[1];
+       	servicios[0] = new Servicio();
+       	servicios[0].setId(equivalencia[0]);
+       	servicios[0].setVigencias(vigencias);
+
+       	final Linea   linea     = new Linea();
+       	linea.setId(idLineaPrepago);
+       	linea.setTipo(Integer.parseInt(equivalencia[1]));
+       	linea.setServicios(servicios);
+       	
+       	final Usuario usuario   = new Usuario();
+       	usuario.setId("VTAPTALES");
+       	usuario.setModulo(13);
+       	
+       	sResponseP = wsBajaServicio.bajaServicios(linea, usuario, idServicio);
+        if(sResponseP != null && !sResponseP.equals("")){
+        	respuestaSSBajaServicio = ParseXMLFile.parseBajaSServicio(sResponseP);
+        }   	
+       	if (!respuestaSSBajaServicio.equals("")){
+       		respuesta.setMessageCode("Servicio dado de baja.");
+       		respuesta.setOperationCode("0");
+       	} else{
+       		respuesta.setMessageCode("No se pudo realizar la Baja del servicio.");
+       		respuesta.setOperationCode("1");
+       	}
+       	
+      }
+      return respuesta;
+   }
 }

@@ -131,6 +131,7 @@ import mx.com.iusacell.services.miiusacell.vo.DetalleSaldoVO;
 import mx.com.iusacell.services.miiusacell.vo.DetalleTotalesLlamadas;
 import mx.com.iusacell.services.miiusacell.vo.DetalleTotalesVO;
 import mx.com.iusacell.services.miiusacell.vo.DetalleWalletsVO;
+import mx.com.iusacell.services.miiusacell.vo.DireccionVO;
 import mx.com.iusacell.services.miiusacell.vo.ErrorVO;
 import mx.com.iusacell.services.miiusacell.vo.EstadoCuentaVO;
 import mx.com.iusacell.services.miiusacell.vo.FacturaVirtualDetalleVO;
@@ -176,6 +177,7 @@ import mx.com.iusacell.services.miiusacell.vo.GestionServiciosWS.RespuestaServic
 import mx.com.iusacell.services.miiusacell.vo.autorizador.TransactionVO;
 import mx.com.iusacell.services.miiusacell.vo.messageMail.MessageMailBean;
 import mx.com.iusacell.services.miiusacell.vo.messageMail.RespuestaMensajeBean;
+import mx.com.iusacell.services.miusacell.call.CallObtieneListaVersionCaeS;
 import mx.com.iusacell.services.miusacell.call.CallServiceConsultaPrepago;
 import mx.com.iusacell.services.miusacell.call.CallServiceConsultasNum;
 import mx.com.iusacell.services.miusacell.call.CallServiceFocalizacion;
@@ -6328,8 +6330,10 @@ public class ServicesImplementation implements ServicesInterface {
 		String sResponse = "";
 		List<ServiciosAdicionalesVO> resServAdicionales = new ArrayList<ServiciosAdicionalesVO>();
 		String idServicio="";
+		String idServicioEx="";
+		String idServicioContratado="";
 		String costoServicio="0";
-
+				
 		try{
 			
 			Logger.write("     user                   : -PROTEGIDO-");
@@ -6400,6 +6404,20 @@ public class ServicesImplementation implements ServicesInterface {
 				}else if(tipoTecnologia == 2){ //Etak
 					idServicio =datosAltaEtak.getId();
 				}
+//				TODO: GAVG Se agrega la validacion para servicios mutuamente excluyentes (277)
+				if(tipoTecnologia == 1){ //legacy
+					if(tipoLinea == 1){ //prepago
+						idServicioEx = datosAltaPrepago.getServiciosId();
+					}else//hibrido // POSPAGO
+						idServicioEx = datosAlta.getServicios();
+				}else if(tipoTecnologia == 2){ //Etak
+					idServicioEx =datosAltaEtak.getId();
+				}
+				idServicioContratado = Utilerias.validaServicioExcluir(idServicioEx,resServAdicionales);
+				if (!idServicioContratado.equals("")){
+					Logger.write("[CTRL] contratarServiciosBit ["+dn+"] :: No puede contratar el servicio : " + idServicio);
+					throw new ServiceException("[CTRL] No puede contratar el servicio, tiene contratado:" + idServicioContratado);
+				}
 				
 				for(int a=0; a<resServAdicionales.size(); a++){
 					if(idServicio.equals(resServAdicionales.get(a).getIdServicio())){
@@ -6410,7 +6428,15 @@ public class ServicesImplementation implements ServicesInterface {
 
 				respuesta =	oracle.contratarServiciosSET(user, pass, dn, costoServicio, datosAltaEtak.getId(), datosAltaEtak.getIdHistorico(), datosAltaEtak.getVigencia(), datosAltaEtak.getMonto(), datosAlta.getDnUsa(), datosAlta.getContinenteFavortio(), datosAlta.getServicios(), datosAltaPrepago.getServiciosId(), datosAltaPrepago.getServicioOrigen(), datosAltaPrepago.getVigenciasUnidad(), datosAltaPrepago.getVigenciasCantidad(), datosAltaPrepago.getOperacion(), compania, sistemaOrigen, token, 2021,tipoLinea, tipoTecnologia, dispositivo);
 			}catch (Exception e) {
-				Logger.write("Detail en el metodo de respuesta contratarServicios");
+				if(e != null && e.getLocalizedMessage() != null){
+					if(e.getLocalizedMessage().contains("[CTRL]")){
+						throw new ServiceException(e.getLocalizedMessage());
+					}else{
+						Logger.write("Detail en el metodo de respuesta contratarServicios");
+					}
+				}else{
+					Logger.write("Detail en el metodo de respuesta contratarServicios");
+				}
 			}
 			
     	    RespContratarServicio = AltaServicioXUsuExt.flujo(dn, datosAltaEtak, datosAlta, datosAltaPrepago, respuesta);
@@ -6431,6 +6457,8 @@ public class ServicesImplementation implements ServicesInterface {
 			if(e != null && e.getLocalizedMessage() != null){
 				if(e.getLocalizedMessage().contains("ORA-20000")){
 					throw new ServiceException("[WARN] contratarServiciosBit ["+dn+"] :: " + e.getLocalizedMessage());
+				}else if(e.getLocalizedMessage().contains("[CTRL]")){
+					throw new ServiceException(e.getLocalizedMessage());
 				}else{
 					throw new ServiceException("[ERR] contratarServiciosBit ["+dn+"] :: " + e.getLocalizedMessage());
 				}
@@ -8273,6 +8301,8 @@ public class ServicesImplementation implements ServicesInterface {
 		String sResponse = "";
 		List<ServiciosAdicionalesVO> resServAdicionales = new ArrayList<ServiciosAdicionalesVO>();
 		String idServicio="";
+		String idServicioEx="";
+		String idServicioContratado="";
 		String costoServicio="0";
 
 		int validaPwd = oracle.validarPassword(dn, password);
@@ -8349,6 +8379,20 @@ public class ServicesImplementation implements ServicesInterface {
 				}else if(tipoTecnologia == 2){ //Etak
 					idServicio =datosAltaEtak.getId();
 				}
+//				TODO: GAVG Se agrega la validacion para servicios mutuamente excluyentes (277)
+				if(tipoTecnologia == 1){ //legacy
+					if(tipoLinea == 1){ //prepago
+						idServicioEx = datosAltaPrepago.getServiciosId();
+					}else//hibrido // POSPAGO
+						idServicioEx = datosAlta.getServicios();
+				}else if(tipoTecnologia == 2){ //Etak
+					idServicioEx =datosAltaEtak.getId();
+				}
+				idServicioContratado = Utilerias.validaServicioExcluir(idServicioEx,resServAdicionales);
+				if (!idServicioContratado.equals("")){
+					Logger.write("[CTRL] contrataServicios ["+dn+"] :: No puede contratar el servicio : " + idServicio);
+					throw new ServiceException("[CTRL] No puede contratar el servicio, tiene contratado:" + idServicioContratado);
+				}
 				
 				for(int a=0; a<resServAdicionales.size(); a++){
 					if(idServicio.equals(resServAdicionales.get(a).getIdServicio())){
@@ -8359,7 +8403,15 @@ public class ServicesImplementation implements ServicesInterface {
 
 				respuesta =	oracle.contratarServiciosSET(user, pass, dn, costoServicio, datosAltaEtak.getId(), datosAltaEtak.getIdHistorico(), datosAltaEtak.getVigencia(), datosAltaEtak.getMonto(), datosAlta.getDnUsa(), datosAlta.getContinenteFavortio(), datosAlta.getServicios(), datosAltaPrepago.getServiciosId(), datosAltaPrepago.getServicioOrigen(), datosAltaPrepago.getVigenciasUnidad(), datosAltaPrepago.getVigenciasCantidad(), datosAltaPrepago.getOperacion(), compania, sistemaOrigen, token, 2021,tipoLinea, tipoTecnologia, dispositivo);
 			}catch (Exception e) {
-				Logger.write("Detail en el metodo de respuesta contratarServicios");
+				if(e != null && e.getLocalizedMessage() != null){
+					if(e.getLocalizedMessage().contains("[CTRL]")){
+						throw new ServiceException(e.getLocalizedMessage());
+					}else{
+						Logger.write("Detail en el metodo de respuesta contratarServicios");
+					}
+				}else{
+					Logger.write("Detail en el metodo de respuesta contratarServicios");
+				}
 			}
 			
     	    RespContratarServicio = AltaServicioXUsuExt.flujo(dn, datosAltaEtak, datosAlta, datosAltaPrepago, respuesta);
@@ -8380,6 +8432,8 @@ public class ServicesImplementation implements ServicesInterface {
 			if(e != null && e.getLocalizedMessage() != null){
 				if(e.getLocalizedMessage().contains("ORA-20000")){
 					throw new ServiceException("[WARN] contrataServicios ["+dn+"] :: " + e.getLocalizedMessage());
+				}else if(e.getLocalizedMessage().contains("[CTRL]")){
+					throw new ServiceException(e.getLocalizedMessage());
 				}else{
 					throw new ServiceException("[ERR] contrataServicios ["+dn+"] :: " + e.getLocalizedMessage());
 				}
@@ -9808,6 +9862,7 @@ public class ServicesImplementation implements ServicesInterface {
 				
 				idOperador = consulta.getIdOperador(dn);
 				
+				
 				Logger.write("   + Retorno idOperador     : " + idOperador);
 					
 			}catch (Exception e){
@@ -10874,7 +10929,7 @@ public class ServicesImplementation implements ServicesInterface {
 		public BankCardAdditionalInfoVO getAditionalCardInfo(String user, String pass,String prefix, String token) throws Throwable
 		{
 			long initime = System.currentTimeMillis();
-	        Logger.init("getValorParametro");
+	        Logger.init("getAditionalCardInfo");
 
 			if (user == null || user.trim().equals("") || !user.trim().equals("AGhAxzwOwKEbI12XQ1MIjQ*/")) {
 				Logger.write("      El usuario no es valido");
@@ -10918,5 +10973,54 @@ public class ServicesImplementation implements ServicesInterface {
 			}
 
 			return cardInfo;
+		}
+		
+		public DireccionVO mapaObtieneColXCPSepomex(String user, String pass,String codigoPostal, String token) throws Throwable
+		{
+			long initime = System.currentTimeMillis();
+	        Logger.init("mapaObtieneColXCPSepomex");
+
+			if (user == null || user.trim().equals("") || !user.trim().equals("AGhAxzwOwKEbI12XQ1MIjQ*/")) {
+				Logger.write("      El usuario no es valido");
+				throw new ServiceException("[ALE] usuario no valido");
+			}
+			if (pass == null || pass.trim().equals("") || !pass.trim().equals("AGhAxzwOwKEbI12XQ1MIjQ*/")) {
+				Logger.write("      El password no es valido");
+				throw new ServiceException("[ALE] password no válido");
+			}	
+			ValidaTokens tokens =  new ValidaTokens();				
+			DireccionVO direccion = new DireccionVO();
+			try {
+				
+				
+				Logger.write("     user                   : -PROTEGIDO-");
+				Logger.write("     pass                   : -PROTEGIDO-");
+				Logger.write("     codigoPostal           : " + codigoPostal);
+				Logger.write("     token                  : " + Formatter.pintaLogCadenasLargas(token));
+				Logger.write("     remoteAddress          : " + getClientIpXfire());
+
+				tokens.validaToken("", token, new MensajeLogBean());	
+				
+				CallObtieneListaVersionCaeS wsMapas = new CallObtieneListaVersionCaeS();
+				final String response = wsMapas.mapaObtieneColXCPSepomex(codigoPostal);
+				if(StringUtils.isNoneEmpty(response)){
+					direccion = ParseXMLFile.parseColonias(response);
+				}
+			}
+			catch (Exception e) {
+				if(e != null && e.getLocalizedMessage() != null){
+					if(e.getLocalizedMessage().contains("ORA-20000")){
+						throw new ServiceException("[WARN] mapaObtieneColXCPSepomex ["+codigoPostal+"] :: " + e.getLocalizedMessage());
+					}else{
+						throw new ServiceException("[ERR] mapaObtieneColXCPSepomex ["+codigoPostal+"] :: " + e.getLocalizedMessage());
+					}
+				}else{
+					throw new ServiceException("[ERR] mapaObtieneColXCPSepomex ["+codigoPostal+"] :: " + e.getLocalizedMessage());
+				}			
+			} finally {
+				Logger.end("mapaObtieneColXCPSepomex ["+codigoPostal+"] :: " + getLocalAddress(), initime);
+			}
+
+			return direccion;
 		}
 }

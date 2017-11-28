@@ -5,6 +5,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import javax.xml.rpc.ServiceException;
 
+import mx.com.iusacell.comun.Linea;
+import mx.com.iusacell.comun.Servicio;
+import mx.com.iusacell.comun.Usuario;
+import mx.com.iusacell.comun.Vigencia;
+import mx.com.iusacell.middleware.servicios.gestion.Cobro;
 import mx.com.iusacell.services.miiusacell.masivo.model.OracleProcedures;
 import mx.com.iusacell.services.miiusacell.vo.AltaServicioEtakVO;
 import mx.com.iusacell.services.miiusacell.vo.AltaServicioLegacyVO;
@@ -15,6 +20,8 @@ import mx.com.iusacell.services.miusacell.call.CallServiceAltaBajaServicios;
 import mx.com.iusacell.services.miusacell.call.CallServiceCompraBundle;
 import mx.com.iusacell.services.miusacell.call.CallServiceConsultaPrepago;
 import mx.com.iusacell.services.miusacell.call.CallServiceFocalizacion;
+import mx.com.iusacell.services.miusacell.call.CallServiceGestionServicios;
+import mx.com.iusacell.services.miusacell.call.CallServiceObtenerDetallesService;
 import mx.com.iusacell.services.miusacell.util.ParseXMLFile;
 import mx.com.iusacell.services.miusacell.util.Utilerias;
 
@@ -30,10 +37,18 @@ public abstract class AltaServicioXUsuExt {
 		DetalleFocalizacionVO descripcion = new DetalleFocalizacionVO();
 		CallServiceCompraBundle bundles = new CallServiceCompraBundle();
 		CallServiceConsultaPrepago consultaPrepago = new CallServiceConsultaPrepago();
+		
+		CallServiceObtenerDetallesService obtieneIdLinea = new CallServiceObtenerDetallesService();
+		
 		OracleProcedures oracle = new OracleProcedures();
-
+		mx.com.iusacell.middleware.servicios.gestion.RespuestaServicios altaPrepago = null;
+		final CallServiceGestionServicios wsFoca = new CallServiceGestionServicios();
+		String idLineaPrepago = "";
+		String[] equivalencia = new String[2];
+		boolean valida = false;
 		try
 		{
+
 			sResponse = focalizacion.focalizacion(dn);
 			if(sResponse != null && !sResponse.equals(""))
 				descripcion = ParseXMLFile.parseFocalizacion(sResponse);
@@ -87,15 +102,106 @@ public abstract class AltaServicioXUsuExt {
 				}
 				else{
 					if(descripcion.getIsPostpagoOrHibrido() != null && !descripcion.getIsPostpagoOrHibrido().equals("")){
-						if(datosAlta != null){
-							String userMod = "APP";
-							try
-							{
-								userMod = oracle.getValorParametro(138);
-							}
-							catch (Exception e) {
-								Logger.write(e.getLocalizedMessage());
-							}
+						
+		                String serviciosPermitidos;              
+		                serviciosPermitidos = oracle.getValorParametro(276);             
+		                serviciosPermitidos = (serviciosPermitidos != null) ? serviciosPermitidos.toLowerCase() : "";
+		                final String[] arrayServPerm = serviciosPermitidos.split(",");
+                        
+		                for(final String msg : arrayServPerm)
+		                {
+		                    if(datosAlta.getServicios().contains(msg))
+		                    {
+		                        valida = true;
+		                        if(descripcion.getIsPostpagoOrHibrido().equals("POSPAGO")) valida = false;
+		                        break;
+		                    }
+		                }
+		                
+		                String userMod = "APP";
+						try
+						{
+							userMod = oracle.getValorParametro(138);
+						}
+						catch (Exception e) {
+							Logger.write(e.getLocalizedMessage());
+						}
+		                
+						if((descripcion.getIsPostpagoOrHibrido().equals("HIBRIDO")) && (valida))
+			            {
+							String responseEq = obtieneIdLinea.obtenerEquivalencia(datosAlta.getServicios());
+							if(responseEq != null && !responseEq.equals("")){
+			                    equivalencia = ParseXMLFile.parseEquivalencia(responseEq);
+			                }
+							
+			                String sResponseP = "";
+			                sResponseP = obtieneIdLinea.obtenerIdLinea(dn);
+			                if(sResponseP != null && !sResponseP.equals("")){
+			                    idLineaPrepago = ParseXMLFile.parseIdLinea(sResponseP);
+			                }
+			                if(idLineaPrepago == null || idLineaPrepago.length() == 0){
+			                	altaPrepago = new mx.com.iusacell.middleware.servicios.gestion.RespuestaServicios();
+			                	altaPrepago.setRespuesta(false);
+			                	altaPrepago.setMensaje("Sin informacion de la linea");
+			                	returnContratoServ.setMessageCode(altaPrepago.getMensaje());
+			                    returnContratoServ.setOperationCode("01");
+			                    throw new ServiceException(altaPrepago.getMensaje());
+			                }else{
+			                	Vigencia[] vigencias = null;
+			                	vigencias = new Vigencia[1];
+			                	vigencias[0] = new Vigencia();
+			                	vigencias[0].setCantidad(0);
+			                	Servicio[] servicios = null;
+			                	servicios = new Servicio[1];
+			                	servicios[0] = new Servicio();
+			                	servicios[0].setId(equivalencia[0]);
+			                	servicios[0].setVigencias(vigencias);
+
+			                	final Linea   linea     = new Linea();
+			                	linea.setId(idLineaPrepago);
+			                	linea.setTipo(Integer.parseInt(equivalencia[1]));
+			                	linea.setServicios(servicios);
+			                	final Usuario usuario   = new Usuario();
+			                	usuario.setId("VTAPTALES");
+			                	usuario.setModulo(13);
+			                	final Cobro   cobro     = null; 
+			                	final int     operacion = 0;
+			                	altaPrepago = wsFoca.operacionServicio(linea, usuario, cobro, operacion);      
+			                	if (altaPrepago.getRespuesta()){
+			                		returnContratoServ.setMessageCode("Servicio contratado.");
+			                		returnContratoServ.setOperationCode("0");
+			                	} else{
+			                		returnContratoServ.setMessageCode("No se pudo realizar la contrataci?n del servicio.");
+			                		returnContratoServ.setOperationCode("1");
+			                		throw new ServiceException("No se pudo realizar la contratacion del servicio.");
+			                	}
+
+			                	//Notifica a BSCS
+			                	try{
+			                		oracle.compraServicioLEGACYSET(numero, descripcion.getCoID(), datosAlta.getDnUsa(), datosAlta.getContinenteFavortio(), datosAlta.getServicios(), descripcion.getTmCode(), "1", userMod, 2121);
+			                	}catch (Exception e) {
+			                		Logger.write("Detail a ejecutar el metodo :: compraServicioLEGACYSET");
+			                	}
+			                	sResponse = servicioLEGACY.altaBajaServicios(descripcion.getCoID(), datosAlta.getDnUsa(), datosAlta.getContinenteFavortio(), datosAlta.getServicios(), descripcion.getTmCode(), "1", userMod);
+
+			                	if(sResponse != null && !sResponse.equals("")){
+			                		returnContratoServ = ParseXMLFile.parseContratarServLegacy(sResponse);
+			                	}
+
+			                	if(returnContratoServ != null && !returnContratoServ.getOperationCode().equals("")){
+			                		try {
+			                			oracle.compraServicioRespuesta(numero, 2, returnContratoServ.getMessageCode(),returnContratoServ.getOperationCode() , 2121,"","");                                        
+			                		}catch (Exception e) {
+			                			Logger.write("Detail a ejecutar el metodo :: compraServicioRespuesta");
+			                		}
+			                	}
+
+
+
+			                }
+			            }
+						
+						if((datosAlta != null) && (valida == false)){							
 							try{
 								oracle.compraServicioLEGACYSET(numero, descripcion.getCoID(), datosAlta.getDnUsa(), datosAlta.getContinenteFavortio(), datosAlta.getServicios(), descripcion.getTmCode(), "1", userMod, 2121);
 							}catch (Exception e) {
@@ -116,7 +222,7 @@ public abstract class AltaServicioXUsuExt {
 								}
 							}
 							
-						}else{
+						}else if (valida == false){
 							throw new ServiceException("Datos incompletos");
 						}
 					}else{

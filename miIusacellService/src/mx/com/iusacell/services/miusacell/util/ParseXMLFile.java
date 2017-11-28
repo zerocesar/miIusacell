@@ -25,6 +25,7 @@ import mx.com.iusacell.services.miiusacell.vo.CatalogoMovilCaeVO;
 import mx.com.iusacell.services.miiusacell.vo.CatalogoVO;
 import mx.com.iusacell.services.miiusacell.vo.CitasDisponiblesXHorario;
 import mx.com.iusacell.services.miiusacell.vo.CitasXHorarioVO;
+import mx.com.iusacell.services.miiusacell.vo.ColoniaVO;
 import mx.com.iusacell.services.miiusacell.vo.ConsultaPrepagoVO;
 import mx.com.iusacell.services.miiusacell.vo.ConsultaSrScVO;
 import mx.com.iusacell.services.miiusacell.vo.ConsultaWalletListVO;
@@ -48,6 +49,7 @@ import mx.com.iusacell.services.miiusacell.vo.DatosUltimasFacturasVO;
 import mx.com.iusacell.services.miiusacell.vo.DetalleFocalizacionVO;
 import mx.com.iusacell.services.miiusacell.vo.DetalleFocalizacionVOExtendido;
 import mx.com.iusacell.services.miiusacell.vo.DetalleWalletsVO;
+import mx.com.iusacell.services.miiusacell.vo.DireccionVO;
 import mx.com.iusacell.services.miiusacell.vo.DispatcherVO;
 import mx.com.iusacell.services.miiusacell.vo.GetCitasPendientesXDNVO;
 import mx.com.iusacell.services.miiusacell.vo.GetHorariosDisponiblesCallCenterVO;
@@ -6673,7 +6675,7 @@ public static ObtenerDescripcionPlanesVO1 ParseObtenerDescripcionPlanes(final St
 												
 												listConsultaWalletUnidadVO.add(consultaWalletsUnidad);
 
-											}else if(registro.getChild("cantidad").getValue().toLowerCase().equals("ilimitado") || registro.getChild("cantidad").getValue().toLowerCase().equals("limitada")){
+											}else if(registro.getChild("cantidad").getValue().toLowerCase().contains("ilimitado") || registro.getChild("cantidad").getValue().toLowerCase().contains("limitada")){
 												redesIlimitadas = true;
 												consultaWalletsIlimitado = new ConsultaWalletListVO();
 												
@@ -8385,4 +8387,247 @@ public static List<ObtenerDetallesServicesClassVO> parseDetalleServiceClass(Stri
 		
     	return respuesta;
     }
+    
+    @SuppressWarnings("unchecked")
+	public static String parseIdLinea(String resultadoXML) throws ServiceException{
+
+    	SAXBuilder builder1 = new SAXBuilder(false);
+		Document doc = null;
+		Element raiz = null;
+		List<Element> childrens = null;
+		Iterator<Element> it = null;
+		String response = "";
+		try{
+			
+
+			if(!resultadoXML.contains("SOAP-ENV:Envelope")){
+				resultadoXML = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"+
+				"<soapenv:Header/>"+
+				"<soapenv:Body>" + resultadoXML;
+				resultadoXML = resultadoXML + "</soapenv:Body></soapenv:Envelope>";
+			}
+			
+			
+			doc = builder1.build(new StringReader(resultadoXML));
+			raiz = doc.getRootElement();
+			
+			if(raiz.getChild("Body", Namespace.getNamespace("http://schemas.xmlsoap.org/soap/envelope/")).getChild("getDatosLineaXDnResponse", Namespace.getNamespace("http://prepago.iusacell.com.mx")) != null){
+				childrens = raiz.getChild("Body", Namespace.getNamespace("http://schemas.xmlsoap.org/soap/envelope/")).getChild("getDatosLineaXDnResponse", Namespace.getNamespace("http://prepago.iusacell.com.mx")).getChildren();
+				it = childrens.iterator();
+				
+				while (it.hasNext()){
+					Element registro = (Element) it.next();
+					if(registro.getName().equals("return")){
+						
+						if(registro.getChild("id", Namespace.getNamespace("http://comun.iusacell.com.mx/xsd")).getValue() != null)
+						    response = registro.getChild("id", Namespace.getNamespace("http://comun.iusacell.com.mx/xsd")).getValue();
+						else
+							response = "";
+					}
+				}
+			}else{
+				response = "";
+			}
+			
+		}catch (Exception e) {
+			throw new ServiceException(e.getMessage());
+		}
+		
+	    return 	response;
+	}
+    
+@SuppressWarnings("unchecked")
+public static String[] parseEquivalencia(String resultadoXML) throws ServiceException{
+		
+		String[] salida = new String[2];
+		
+		SAXBuilder builder1 = new SAXBuilder(false);
+		Document doc = null;
+		Element raiz = null;
+		List<Element> childrens = null;
+		Iterator<Element> it = null;
+		
+		try{
+			
+
+			if(!resultadoXML.contains("SOAP-ENV:Envelope")){
+				resultadoXML = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"+
+				"<soapenv:Header/>"+
+				"<soapenv:Body>" + resultadoXML;
+				resultadoXML = resultadoXML + "</soapenv:Body></soapenv:Envelope>";
+			}
+			
+			
+			doc = builder1.build(new StringReader(resultadoXML));
+			raiz = doc.getRootElement();
+			
+			if(raiz.getChild("Body", Namespace.getNamespace("http://schemas.xmlsoap.org/soap/envelope/")).getChild("obtieneEquivalenciaServiciosResponse", Namespace.getNamespace("http://prepago.iusacell.com.mx")) != null){
+				childrens = raiz.getChild("Body", Namespace.getNamespace("http://schemas.xmlsoap.org/soap/envelope/")).getChild("obtieneEquivalenciaServiciosResponse", Namespace.getNamespace("http://prepago.iusacell.com.mx")).getChildren();
+				it = childrens.iterator();
+				
+				while (it.hasNext()){
+					Element registro = (Element) it.next();
+					if(registro.getName().equals("return")){
+						
+						if(registro.getChild("id", Namespace.getNamespace("http://comun.iusacell.com.mx/xsd")).getValue() != null)
+						    salida[0] = registro.getChild("id", Namespace.getNamespace("http://comun.iusacell.com.mx/xsd")).getValue();
+						else
+							salida[0] = "";
+						
+						if(registro.getChild("tipo", Namespace.getNamespace("http://comun.iusacell.com.mx/xsd")).getValue() != null)
+						    salida[1] = registro.getChild("tipo", Namespace.getNamespace("http://comun.iusacell.com.mx/xsd")).getValue();
+						else
+							salida[1] = "";
+						
+					}
+				}
+			}else{
+				salida[0] = "";
+				salida[1] = "";
+			}
+			
+		}catch (Exception e) {
+			throw new ServiceException(e.getMessage());
+		}
+
+		return 	salida;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static DireccionVO parseColonias(final String resultadoXML) throws ServiceException{
+
+	String error="";
+	SAXBuilder builder1 = new SAXBuilder();
+	Document doc = null;
+	Element raiz = null;
+	List<Element> childrens = null;
+	List<Element> catalogo = null;
+	Iterator<Element> it = null;
+	Iterator<Element> itCatalogo = null;	
+	DireccionVO direccion = new DireccionVO();
+	List<ColoniaVO> colonias = new ArrayList<ColoniaVO>();
+	ColoniaVO colonia = null;
+	try{
+		doc = builder1.build(new StringReader(resultadoXML));
+		raiz = doc.getRootElement();
+
+		if(raiz.getChild("Body", Namespace.getNamespace("http://schemas.xmlsoap.org/soap/envelope/")).getChild("MapaObtieneColXCPSepomexResponse", Namespace.getNamespace("http://services.mapas.iusacell.com.mx")) != null){
+			childrens = raiz.getChild("Body", Namespace.getNamespace("http://schemas.xmlsoap.org/soap/envelope/")).getChild("MapaObtieneColXCPSepomexResponse", Namespace.getNamespace("http://services.mapas.iusacell.com.mx")).getChild("out", Namespace.getNamespace("http://services.mapas.iusacell.com.mx")).getChildren();
+
+			it = childrens.iterator();
+
+
+			while(it.hasNext()){
+				Element registroIni = (Element) it.next();
+				
+				if(registroIni.getName().equals("colonias")){
+					catalogo = registroIni.getChildren();
+					itCatalogo = catalogo.iterator();					
+
+					while(itCatalogo.hasNext()){
+						colonia = new ColoniaVO();
+						Element registro = (Element) itCatalogo.next();
+						List<Element> catalogo2 = registro.getChildren();
+						Iterator<Element> itCatalogo2 = catalogo2.iterator();
+						while(itCatalogo2.hasNext()){
+							Element registro2 = (Element) itCatalogo2.next();
+							if(registro2.getName().equals("colonia")){
+
+								colonia.setColonia(registro2.getValue());
+							}
+							if(registro2.getName().equals("idColonia")){
+								colonia.setIdColonia(registro2.getValue());
+							}							
+						}
+						colonias.add(colonia);	
+					}	
+					direccion.setColonias(colonias);
+				}
+				else if(registroIni.getName().equals("estado")){
+					direccion.setEstado(registroIni.getValue());
+				}
+				else if(registroIni.getName().equals("idEstado")){
+					direccion.setIdEstado(registroIni.getValue());
+				}
+				else if(registroIni.getName().equals("idMunicipio")){
+					direccion.setIdMunicipio(registroIni.getValue());
+				}
+				else if(registroIni.getName().equals("idPais")){
+					direccion.setIdPais(registroIni.getValue());
+				}
+				else if(registroIni.getName().equals("municipio")){
+					direccion.setMunicipio(registroIni.getValue());
+				}
+				else if(registroIni.getName().equals("pais")){
+					direccion.setPais(registroIni.getValue());
+				}											
+			}
+		}else{
+			childrens = raiz.getChild("Body", Namespace.getNamespace("http://schemas.xmlsoap.org/soap/envelope/")).getChild("Fault", Namespace.getNamespace("http://schemas.xmlsoap.org/soap/envelope/")).getChildren();
+			it = childrens.iterator();
+			while (it.hasNext()) {
+				Element registro = (Element) it.next();
+				error += ((" ")+registro.getValue());
+			}
+			throw new ServiceException(error);
+		}	
+	}catch (Exception e) {
+		if(error!=null && !error.equals("")){
+			throw new ServiceException(error);
+		}
+		else{
+			Logger.write("   Detail        : (Exception) " + e.getMessage());
+			throw new ServiceException("Ocurrio un error al obtener valores de parseColonias");
+		}
+	}
+	return direccion;		
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static String parseBajaSServicio(String resultadoXML) throws ServiceException{
+
+		SAXBuilder builder1 = new SAXBuilder(false);
+		Document doc = null;
+		Element raiz = null;
+		List<Element> childrens = null;
+		Iterator<Element> it = null;
+		String response = "";
+		try{
+			
+
+			if(!resultadoXML.contains("SOAP-ENV:Envelope")){
+				resultadoXML = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:soapenc=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"+
+				"<soapenv:Header/>"+
+				"<soapenv:Body>" + resultadoXML;
+				resultadoXML = resultadoXML + "</soapenv:Body></soapenv:Envelope>";
+			}
+			
+			
+			doc = builder1.build(new StringReader(resultadoXML));
+			raiz = doc.getRootElement();
+			
+			if(raiz.getChild("Body", Namespace.getNamespace("http://schemas.xmlsoap.org/soap/envelope/")).getChild("bajaServiciosResponse", Namespace.getNamespace("http://impl.servicios.iusacell.com.mx")) != null){
+				childrens = raiz.getChild("Body", Namespace.getNamespace("http://schemas.xmlsoap.org/soap/envelope/")).getChild("bajaServiciosResponse", Namespace.getNamespace("http://impl.servicios.iusacell.com.mx")).getChildren();
+				it = childrens.iterator();
+				
+				while (it.hasNext()){
+					Element registro = (Element) it.next();
+					if(registro.getName().equals("return")){
+						
+						if(registro.getChild("idTx", Namespace.getNamespace("http://vo.servicios.iusacell.com.mx/xsd")).getValue() != null)
+						    response = registro.getChild("idTx", Namespace.getNamespace("http://vo.servicios.iusacell.com.mx/xsd")).getValue();
+						else
+							response = "";
+					}
+				}
+			}else{
+				response = "";
+			}
+			
+		}catch (Exception e) {
+			throw new ServiceException(e.getMessage());
+		}
+		
+	    return 	response;
+	}
 }
