@@ -196,10 +196,12 @@ public class AbonoTiempoAireAutorizador implements AbonoTiempoAireIn{
 						if(validaErr != null && !validaErr.equals("") && codigo != -1){
 							errorCode = validaErr.getDescEspaniol();
 						}else{
-							errorCode = "La operación fue rechazada por el banco emisor";	
+							errorCode = error;	
 						}
-					}else{
+					}else if(codigo != -1){
 						errorCode = VALIDATORCHARGE.getDescErrorPorCodigo(codigo);
+					}else{
+						errorCode = error;	
 					}
 				}else{
 					errorCode = "La operación fue rechazada por el banco emisor";
@@ -468,10 +470,12 @@ public class AbonoTiempoAireAutorizador implements AbonoTiempoAireIn{
 						if(validaErr != null && !validaErr.equals("") && codigo != -1){
 							errorCode = validaErr.getDescEspaniol();
 						}else{
-							errorCode = "La operación fue rechazada por el banco emisor";	
+							errorCode = error;	
 						}
-					}else{
+					}else if(codigo != -1){
 						errorCode = VALIDATORCHARGE.getDescErrorPorCodigo(codigo);
+					}else{
+						errorCode = error;	
 					}
 				}else{
 					errorCode = "La operación fue rechazada por el banco emisor";

@@ -19,7 +19,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   
   <body>
     <div style="position: absolute; left: 10px; bottom: 10px; color: #999; font-size: 10px; font-family: 'Omnes_att_regular', Arial">
-    		RFC: 1709C0894 | 26/09/2017 | v1.0.19
+    		RFC: 1712C0153 | 16/01/2018 | v1.0.20
     </div>
   </body>
 </html>
